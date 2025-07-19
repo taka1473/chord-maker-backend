@@ -1,0 +1,38 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 3000 -b '0.0.0.0'"
+    image: chord-maker-backend:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - .:/myapp
+    ports:
+      - "3000:3000"
+    restart: always
+    tty: true
+    stdin_open: true
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:17.5
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    restart: always
+    healthcheck:
+      test: pg_isready -U postgres
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+volumes:
+  pg_data:
+  bundle:
