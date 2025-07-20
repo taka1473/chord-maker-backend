@@ -10,6 +10,7 @@ services:
       POSTGRES_PASSWORD: password
     volumes:
       - .:/myapp
+      - bundle:/myapp/bundle
     ports:
       - "3000:3000"
     restart: always
