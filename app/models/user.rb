@@ -16,4 +16,5 @@ class User < ApplicationRecord
   has_many :scores, dependent: :destroy
   
   validates :name, presence: true, length: { minimum: 2, maximum: 50 }
+  validates :account_id, presence: true, uniqueness: true
 end 
