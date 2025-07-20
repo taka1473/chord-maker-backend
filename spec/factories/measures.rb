@@ -16,11 +16,15 @@
 #
 #  fk_rails_...  (score_id => scores.id)
 #
-class Measure < ApplicationRecord
-  belongs_to :score
-  has_many :chords, dependent: :destroy
-  
-  validates :position, presence: true, numericality: { greater_than: 0 }
-  
-  scope :ordered, -> { order(:position) }
+FactoryBot.define do
+  factory :measure do
+    association :score
+    sequence(:position) { |n| n }
+
+    trait :with_chords do
+      after(:create) do |measure|
+        create_list(:chord, 2, measure: measure)
+      end
+    end
+  end
 end 

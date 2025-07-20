@@ -16,11 +16,16 @@
 #
 #  fk_rails_...  (score_id => scores.id)
 #
-class Measure < ApplicationRecord
-  belongs_to :score
-  has_many :chords, dependent: :destroy
-  
-  validates :position, presence: true, numericality: { greater_than: 0 }
-  
-  scope :ordered, -> { order(:position) }
+require 'rails_helper'
+
+RSpec.describe Measure, type: :model do
+  describe 'scope' do
+    describe 'ordered' do
+      it 'returns measures in order of position' do
+        measure1 = create(:measure, position: 1)
+        measure2 = create(:measure, position: 2)
+        expect(Measure.ordered).to eq([measure1, measure2])
+      end
+    end
+  end
 end 

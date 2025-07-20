@@ -22,13 +22,25 @@
 #
 #  fk_rails_...  (user_id => users.id)
 #
-class Score < ApplicationRecord
-  belongs_to :user
-  has_many :measures, dependent: :destroy
-  
-  validates :title, presence: true, length: { minimum: 1, maximum: 100 }
-  validates :key, presence: true, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 11 }
-  validates :tempo, numericality: { greater_than: 0, less_than: 500 }, allow_blank: true
-  
-  scope :published, -> { where(published: true) }
+FactoryBot.define do
+  factory :score do
+    association :user
+    title { "Sample Song" }
+    key { 0 }
+    key_name { "A" }
+    tempo { 120 }
+    time_signature { "4/4" }
+    published { false }
+    lyrics { "Sample lyrics for the song" }
+
+    trait :published do
+      published { true }
+    end
+
+    trait :with_measures do
+      after(:create) do |score|
+        create_list(:measure, 3, score: score)
+      end
+    end
+  end
 end 
