@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_20_081624) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_20_082447) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -19,7 +19,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_20_081624) do
     t.integer "position", null: false
     t.integer "root_offset", null: false
     t.integer "bass_offset", null: false
-    t.string "type", default: "0", null: false
+    t.string "chord_type", default: "0", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["measure_id"], name: "index_chords_on_measure_id"
