@@ -10,13 +10,13 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_20_081136) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_20_081624) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
   create_table "chords", force: :cascade do |t|
     t.bigint "measure_id", null: false
-    t.integer "order", null: false
+    t.integer "position", null: false
     t.integer "root_offset", null: false
     t.integer "bass_offset", null: false
     t.string "type", default: "0", null: false
@@ -27,7 +27,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_20_081136) do
 
   create_table "measures", force: :cascade do |t|
     t.bigint "score_id", null: false
-    t.integer "order", null: false
+    t.integer "position", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["score_id"], name: "index_measures_on_score_id"
