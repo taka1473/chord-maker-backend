@@ -1,4 +1,9 @@
 Rails.application.routes.draw do
+  mount Rswag::Api::Engine => '/api-docs'
+
   root "scores#index"
-  resources :scores, only: [:index, :show]
+
+  namespace :api do
+    resources :scores, only: [:index, :show]
+  end
 end
