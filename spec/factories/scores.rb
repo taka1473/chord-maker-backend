@@ -2,17 +2,17 @@
 #
 # Table name: scores
 #
-#  id                                                                                 :bigint           not null, primary key
-#  key(0: A, 1: A#, 2: B, 3: C, 4: C#, 5: D, 6: D#, 7: E, 8: F, 9: F#, 10: G, 11: G#) :integer          not null
-#  key_name(distinguishing A# from Bb)                                                :string           not null
-#  lyrics                                                                             :text
-#  published                                                                          :boolean          default(FALSE)
-#  tempo                                                                              :integer          not null
-#  time_signature                                                                     :string           not null
-#  title                                                                              :string           not null
-#  created_at                                                                         :datetime         not null
-#  updated_at                                                                         :datetime         not null
-#  user_id                                                                            :bigint           not null
+#  id                                  :bigint           not null, primary key
+#  key(0: A, 1: A#...)                 :integer          not null
+#  key_name(distinguishing A# from Bb) :string           not null
+#  lyrics                              :text
+#  published                           :boolean          default(FALSE)
+#  tempo                               :integer
+#  time_signature                      :string
+#  title                               :string           not null
+#  created_at                          :datetime         not null
+#  updated_at                          :datetime         not null
+#  user_id                             :bigint           not null
 #
 # Indexes
 #

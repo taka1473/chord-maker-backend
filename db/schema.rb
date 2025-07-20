@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_20_082447) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_20_150242) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -37,9 +37,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_20_082447) do
     t.string "title", null: false
     t.bigint "user_id", null: false
     t.boolean "published", default: false
-    t.integer "tempo", null: false
-    t.integer "key", null: false, comment: "0: A, 1: A#, 2: B, 3: C, 4: C#, 5: D, 6: D#, 7: E, 8: F, 9: F#, 10: G, 11: G#"
-    t.string "time_signature", null: false
+    t.integer "tempo"
+    t.integer "key", null: false, comment: "0: A, 1: A#..."
+    t.string "time_signature"
     t.text "lyrics"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
