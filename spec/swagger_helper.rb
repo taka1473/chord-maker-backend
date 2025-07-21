@@ -22,14 +22,25 @@ RSpec.configure do |config|
         version: 'v1'
       },
       paths: {},
+      components: {
+        schemas: {
+          Score: {
+            type: :object,
+            properties: {
+              id: { type: :integer },
+              title: { type: :string },
+              key: { type: :integer },
+              key_name: { type: :string },
+              tempo: { type: :integer, nullable: true },
+              time_signature: { type: :string, nullable: true }
+            },
+            required: [:id, :title, :key, :key_name, :tempo, :time_signature]
+          }
+        }
+      },
       servers: [
         {
-          url: 'https://{defaultHost}',
-          variables: {
-            defaultHost: {
-              default: 'www.example.com'
-            }
-          }
+          url: 'http://localhost:3000',
         }
       ]
     }

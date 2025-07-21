@@ -5,41 +5,33 @@ RSpec.describe 'api/scores', type: :request do
   path '/api/scores' do
 
     get('list scores') do
+      produces 'application/json'
+
       response(200, 'successful') do
-        schema type: :array, items: {
-          type: :object,
-          properties: {
-            id: { type: :integer },
-            title: { type: :string },
-            key: { type: :integer },
-            key_name: { type: :string },
-            tempo: { type: :integer },
-            time_signature: { type: :string },
-          },
-          required: [:id, :title, :key, :key_name, :tempo, :time_signature]
-        }
-        run_test!
+        schema type: :array, items: { '$ref' => '#/components/schemas/Score' }
+
+        before { create_list(:score, 3) }
+
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data.length).to eq(3)
+        end
       end
     end
   end
 
   path '/api/scores/{id}' do
-    # You'll want to customize the parameter types...
     parameter name: 'id', in: :path, type: :string, description: 'id'
-
+    
     get('show score') do
+      produces 'application/json'
+
       response(200, 'successful') do
+        schema '$ref' => '#/components/schemas/Score'
+
         let(:score) { create(:score, title: 'test', key: 0, key_name: 'A', tempo: 120, time_signature: '4/4') }
         let(:id) { score.id }
 
-        schema type: :object, properties: {
-          id: { type: :integer },
-          title: { type: :string },
-          key: { type: :integer },
-          key_name: { type: :string },
-          tempo: { type: :integer },
-          time_signature: { type: :string },
-        }, required: [:id, :title, :key, :key_name, :tempo, :time_signature]
         run_test! do |response|
           data = JSON.parse(response.body)
           expect(data['id']).to eq(id)
