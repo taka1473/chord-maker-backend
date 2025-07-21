@@ -23,6 +23,8 @@ paths:
       responses:
         '200':
           description: successful
+        '404':
+          description: not found
 servers:
 - url: https://{defaultHost}
   variables:

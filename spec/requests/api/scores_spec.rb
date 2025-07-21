@@ -50,6 +50,11 @@ RSpec.describe 'api/scores', type: :request do
           expect(data['time_signature']).to eq('4/4')
         end
       end
+
+      response(404, 'not found') do
+        let(:id) { 'invalid' }
+        run_test!
+      end
     end
   end
 end
