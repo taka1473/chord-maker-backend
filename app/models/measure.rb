@@ -19,6 +19,8 @@
 class Measure < ApplicationRecord
   belongs_to :score
   has_many :chords, dependent: :destroy
+
+  accepts_nested_attributes_for :chords, allow_destroy: true
   
   validates :position, presence: true, numericality: { greater_than: 0 }
   

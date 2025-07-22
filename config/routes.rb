@@ -6,7 +6,10 @@ Rails.application.routes.draw do
 
   namespace :api do
     resources :scores, only: [:index, :create] do
-      get :whole_score, on: :member
+      member do
+        get :whole_score
+        patch :upsert_whole_score
+      end
     end
   end
 end

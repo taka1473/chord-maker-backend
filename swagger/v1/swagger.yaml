@@ -74,6 +74,121 @@ paths:
                 "$ref": "#/components/schemas/Score"
         '404':
           description: not found
+  "/api/scores/{id}/upsert_whole_score":
+    parameters:
+    - name: id
+      in: path
+      description: id of existing score
+      required: true
+      schema:
+        type: string
+    patch:
+      summary: upsert whole score
+      parameters: []
+      responses:
+        '200':
+          description: upsert score with deleting measures and chords
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  title:
+                    type: string
+                  key:
+                    type: integer
+                  key_name:
+                    type: string
+                  tempo:
+                    type: integer
+                    nullable: true
+                  time_signature:
+                    type: string
+                    nullable: true
+                  lyrics:
+                    type: string
+                    nullable: true
+                  measures:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        position:
+                          type: integer
+                        chords:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: integer
+                              position:
+                                type: integer
+                              root_offset:
+                                type: integer
+                              bass_offset:
+                                type: integer
+                              chord_type:
+                                type: string
+        '404':
+          description: score not found
+        '422':
+          description: validation errors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                score:
+                  type: object
+                  properties:
+                    title:
+                      type: string
+                    key_name:
+                      type: string
+                    tempo:
+                      type: integer
+                    time_signature:
+                      type: string
+                    lyrics:
+                      type: string
+                    user_id:
+                      type: integer
+                    published:
+                      type: boolean
+                    measures_attributes:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                          position:
+                            type: integer
+                          _destroy:
+                            type: boolean
+                          chords_attributes:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                id:
+                                  type: integer
+                                position:
+                                  type: integer
+                                root_offset:
+                                  type: integer
+                                bass_offset:
+                                  type: integer
+                                chord_type:
+                                  type: string
+                                _destroy:
+                                  type: boolean
 components:
   schemas:
     Score:

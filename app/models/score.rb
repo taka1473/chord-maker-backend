@@ -45,6 +45,7 @@ class Score < ApplicationRecord
 
   belongs_to :user
   has_many :measures, dependent: :destroy
+  has_many :chords, through: :measures
   
   validates :title, presence: true, length: { minimum: 1, maximum: 100 }
   validates :key, presence: true, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 11 }
@@ -52,6 +53,9 @@ class Score < ApplicationRecord
   validates :tempo, numericality: { greater_than: 0, less_than: 500 }, allow_blank: true
 
   before_validation :set_key
+
+  accepts_nested_attributes_for :measures, allow_destroy: true
+  accepts_nested_attributes_for :chords, allow_destroy: true
   
   scope :published, -> { where(published: true) }
 
