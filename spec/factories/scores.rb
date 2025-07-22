@@ -26,7 +26,6 @@ FactoryBot.define do
   factory :score do
     association :user
     title { "Sample Song" }
-    key { 0 }
     key_name { "A" }
     tempo { 120 }
     time_signature { "4/4" }

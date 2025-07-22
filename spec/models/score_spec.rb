@@ -25,84 +25,153 @@
 require 'rails_helper'
 
 RSpec.describe Score, type: :model do
-  describe 'validations' do
-    describe 'key_name_respond_to_key validation' do
-      let(:user) { create(:user) }
+  describe '#set_key (before_validation callback)' do
+    let(:user) { create(:user) }
 
-      context 'when key and key_name match' do
-        it 'is valid with A key (0) and A key_name' do
-          score = build(:score, user: user, key: 0, key_name: 'A')
-          expect(score).to be_valid
-        end
-
-        it 'is valid with A# key (1) and A# key_name' do
-          score = build(:score, user: user, key: 1, key_name: 'A#')
-          expect(score).to be_valid
-        end
-
-        it 'is valid with Bb key (1) and Bb key_name' do
-          score = build(:score, user: user, key: 1, key_name: 'Bb')
-          expect(score).to be_valid
-        end
-
-        it 'is valid with C key (3) and C key_name' do
-          score = build(:score, user: user, key: 3, key_name: 'C')
-          expect(score).to be_valid
-        end
-
-        it 'is valid with F# key (9) and F# key_name' do
-          score = build(:score, user: user, key: 9, key_name: 'F#')
-          expect(score).to be_valid
-        end
-
-        it 'is valid with Gb key (9) and Gb key_name' do
-          score = build(:score, user: user, key: 9, key_name: 'Gb')
-          expect(score).to be_valid
-        end
+    context 'when key_name is provided and key is not set' do
+      it 'sets key to 0 when key_name is A' do
+        score = build(:score, user: user, key_name: 'A', key: nil)
+        score.valid?
+        expect(score.key).to eq(0)
       end
 
-      context 'when key and key_name do not match' do
-        it 'is invalid with A key (0) and B key_name' do
-          score = build(:score, user: user, key: 0, key_name: 'B')
-          expect(score).not_to be_valid
-          expect(score.errors[:key]).to include('does not match the key name')
-        end
-
-        it 'is invalid with A# key (1) and C key_name' do
-          score = build(:score, user: user, key: 1, key_name: 'C')
-          expect(score).not_to be_valid
-          expect(score.errors[:key]).to include('does not match the key name')
-        end
-
-        it 'is invalid with C key (3) and D key_name' do
-          score = build(:score, user: user, key: 3, key_name: 'D')
-          expect(score).not_to be_valid
-          expect(score.errors[:key]).to include('does not match the key name')
-        end
-
-        it 'is invalid with F# key (9) and A# key_name' do
-          score = build(:score, user: user, key: 9, key_name: 'A#')
-          expect(score).not_to be_valid
-          expect(score.errors[:key]).to include('does not match the key name')
-        end
+      it 'sets key to 1 when key_name is A#' do
+        score = build(:score, user: user, key_name: 'A#', key: nil)
+        score.valid?
+        expect(score.key).to eq(1)
       end
 
-      context 'edge cases' do
-        it 'handles enharmonic equivalents correctly (A# vs Bb both map to key 1)' do
-          score1 = build(:score, user: user, key: 1, key_name: 'A#')
-          score2 = build(:score, user: user, key: 1, key_name: 'Bb')
-          
-          expect(score1).to be_valid
-          expect(score2).to be_valid
-        end
+      it 'sets key to 1 when key_name is Bb' do
+        score = build(:score, user: user, key_name: 'Bb', key: nil)
+        score.valid?
+        expect(score.key).to eq(1)
+      end
 
-        it 'handles other enharmonic equivalents correctly (F# vs Gb both map to key 9)' do
-          score1 = build(:score, user: user, key: 9, key_name: 'F#')
-          score2 = build(:score, user: user, key: 9, key_name: 'Gb')
-          
-          expect(score1).to be_valid
-          expect(score2).to be_valid
-        end
+      it 'sets key to 2 when key_name is B' do
+        score = build(:score, user: user, key_name: 'B', key: nil)
+        score.valid?
+        expect(score.key).to eq(2)
+      end
+
+      it 'sets key to 3 when key_name is C' do
+        score = build(:score, user: user, key_name: 'C', key: nil)
+        score.valid?
+        expect(score.key).to eq(3)
+      end
+
+      it 'sets key to 4 when key_name is C#' do
+        score = build(:score, user: user, key_name: 'C#', key: nil)
+        score.valid?
+        expect(score.key).to eq(4)
+      end
+
+      it 'sets key to 4 when key_name is Db' do
+        score = build(:score, user: user, key_name: 'Db', key: nil)
+        score.valid?
+        expect(score.key).to eq(4)
+      end
+
+      it 'sets key to 5 when key_name is D' do
+        score = build(:score, user: user, key_name: 'D', key: nil)
+        score.valid?
+        expect(score.key).to eq(5)
+      end
+
+      it 'sets key to 6 when key_name is D#' do
+        score = build(:score, user: user, key_name: 'D#', key: nil)
+        score.valid?
+        expect(score.key).to eq(6)
+      end
+
+      it 'sets key to 6 when key_name is Eb' do
+        score = build(:score, user: user, key_name: 'Eb', key: nil)
+        score.valid?
+        expect(score.key).to eq(6)
+      end
+
+      it 'sets key to 7 when key_name is E' do
+        score = build(:score, user: user, key_name: 'E', key: nil)
+        score.valid?
+        expect(score.key).to eq(7)
+      end
+
+      it 'sets key to 8 when key_name is F' do
+        score = build(:score, user: user, key_name: 'F', key: nil)
+        score.valid?
+        expect(score.key).to eq(8)
+      end
+
+      it 'sets key to 9 when key_name is F#' do
+        score = build(:score, user: user, key_name: 'F#', key: nil)
+        score.valid?
+        expect(score.key).to eq(9)
+      end
+
+      it 'sets key to 9 when key_name is Gb' do
+        score = build(:score, user: user, key_name: 'Gb', key: nil)
+        score.valid?
+        expect(score.key).to eq(9)
+      end
+
+      it 'sets key to 10 when key_name is G' do
+        score = build(:score, user: user, key_name: 'G', key: nil)
+        score.valid?
+        expect(score.key).to eq(10)
+      end
+
+      it 'sets key to 11 when key_name is G#' do
+        score = build(:score, user: user, key_name: 'G#', key: nil)
+        score.valid?
+        expect(score.key).to eq(11)
+      end
+
+      it 'sets key to 11 when key_name is Ab' do
+        score = build(:score, user: user, key_name: 'Ab', key: nil)
+        score.valid?
+        expect(score.key).to eq(11)
+      end
+    end
+
+    context 'when key_name is provided and key is already set' do
+      it 'overwrites the existing key value based on key_name' do
+        score = build(:score, user: user, key_name: 'C', key: 5)
+        score.valid?
+        expect(score.key).to eq(3) # C maps to 3, not 5
+      end
+
+      it 'overwrites incorrect key value with correct one from key_name' do
+        score = build(:score, user: user, key_name: 'F#', key: 2)
+        score.valid?
+        expect(score.key).to eq(9) # F# maps to 9, not 2
+      end
+    end
+
+    context 'when key_name is nil or invalid' do
+      it 'sets key to nil when key_name is nil' do
+        score = build(:score, user: user, key_name: nil, key: 5)
+        score.valid?
+        expect(score.key).to be_nil
+      end
+
+      it 'sets key to nil when key_name is not in KEY_MAP' do
+        score = build(:score, user: user, key_name: 'InvalidKey', key: 5)
+        score.valid?
+        expect(score.key).to be_nil
+      end
+    end
+
+    context 'callback timing' do
+      it 'runs before validation, allowing the validation to pass' do
+        score = build(:score, user: user, key_name: 'A', key: nil)
+        expect(score).to be_valid
+        expect(score.key).to eq(0)
+      end
+
+      it 'ensures key is set before key_name_respond_to_key validation runs' do
+        score = build(:score, user: user, key_name: 'C', key: nil)
+        expect(score).to be_valid
+        expect(score.key).to eq(3)
+        expect(score.errors).to be_empty
       end
     end
   end
