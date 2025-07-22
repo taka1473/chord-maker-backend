@@ -32,7 +32,6 @@ RSpec.describe 'api/scores', type: :request do
               key_name: { type: :string },
               tempo: { type: :integer },
               time_signature: { type: :string },
-              lyrics: { type: :string },
               user_id: { type: :integer },
               published: { type: :boolean }
             },
@@ -52,7 +51,6 @@ RSpec.describe 'api/scores', type: :request do
               key_name: 'C',
               tempo: 140,
               time_signature: '3/4',
-              lyrics: 'Test lyrics for new song',
               user_id: user.id,
               published: false
             }
@@ -67,7 +65,6 @@ RSpec.describe 'api/scores', type: :request do
           expect(data['key_name']).to eq('C')
           expect(data['tempo']).to eq(140)
           expect(data['time_signature']).to eq('3/4')
-          expect(data['lyrics']).to eq('Test lyrics for new song')
           expect(data['id']).to be_present
           expect(data['created_at']).to be_present
           
@@ -99,7 +96,6 @@ RSpec.describe 'api/scores', type: :request do
           expect(data['key_name']).to eq('C')
           expect(data['tempo']).to be_nil
           expect(data['time_signature']).to be_nil
-          expect(data['lyrics']).to be_nil
           expect(data['id']).to be_present
         end
       end
@@ -205,7 +201,7 @@ RSpec.describe 'api/scores', type: :request do
         schema '$ref' => '#/components/schemas/Score'
 
         let(:score) do
-          create(:score, title: 'test', key_name: 'A', tempo: 120, time_signature: '4/4', lyrics: 'Test lyrics')
+          create(:score, title: 'test', key_name: 'A', tempo: 120, time_signature: '4/4')
         end
         let!(:measure1) { create(:measure, score: score, position: 1) }
         let!(:measure2) { create(:measure, score: score, position: 2) }
@@ -224,7 +220,6 @@ RSpec.describe 'api/scores', type: :request do
           expect(data['key_name']).to eq('A')
           expect(data['tempo']).to eq(120)
           expect(data['time_signature']).to eq('4/4')
-          expect(data['lyrics']).to eq('Test lyrics')
           
           # Test measures are included
           expect(data['measures']).to be_present
@@ -293,7 +288,6 @@ RSpec.describe 'api/scores', type: :request do
               key_name: { type: :string },
               tempo: { type: :integer },
               time_signature: { type: :string },
-              lyrics: { type: :string },
               user_id: { type: :integer },
               published: { type: :boolean },
               measures_attributes: {
@@ -335,7 +329,6 @@ RSpec.describe 'api/scores', type: :request do
                  key_name: { type: :string },
                  tempo: { type: :integer, nullable: true },
                  time_signature: { type: :string, nullable: true },
-                 lyrics: { type: :string, nullable: true },
                  measures: {
                    type: :array,
                    items: {
@@ -371,7 +364,6 @@ RSpec.describe 'api/scores', type: :request do
               key_name: 'G',
               tempo: 100,
               time_signature: '4/4',
-              lyrics: 'Updated lyrics here',
               user_id: user.id,
               published: true,
               measures_attributes: [
@@ -403,7 +395,6 @@ RSpec.describe 'api/scores', type: :request do
           expect(data['key_name']).to eq('G')
           expect(data['tempo']).to eq(100)
           expect(data['time_signature']).to eq('4/4')
-          expect(data['lyrics']).to eq('Updated lyrics here')
           expect(data['id']).to eq(existing_score.id)
           
           # Test measures structure

@@ -43,10 +43,10 @@ class Api::ScoresController < ApplicationController
   private
 
   def score_params
-    params.require(:score).permit(:title, :key_name, :tempo, :time_signature, :lyrics, :user_id, :published)
+    params.require(:score).permit(:title, :key_name, :tempo, :time_signature, :user_id, :published)
   end
 
   def whole_score_params
-    params.require(:score).permit(:title, :key_name, :tempo, :time_signature, :lyrics, :user_id, :published, measures_attributes: [:id, :position, :_destroy, chords_attributes: [:id, :root_offset, :bass_offset, :chord_type, :position, :_destroy]])
+    params.require(:score).permit(:title, :key_name, :tempo, :time_signature, :user_id, :published, measures_attributes: [:id, :position, :_destroy, chords_attributes: [:id, :root_offset, :bass_offset, :chord_type, :position, :_destroy]])
   end
 end

@@ -45,8 +45,6 @@ paths:
                       type: integer
                     time_signature:
                       type: string
-                    lyrics:
-                      type: string
                     user_id:
                       type: integer
                     published:
@@ -107,9 +105,6 @@ paths:
                   time_signature:
                     type: string
                     nullable: true
-                  lyrics:
-                    type: string
-                    nullable: true
                   measures:
                     type: array
                     items:
@@ -154,8 +149,6 @@ paths:
                     tempo:
                       type: integer
                     time_signature:
-                      type: string
-                    lyrics:
                       type: string
                     user_id:
                       type: integer
