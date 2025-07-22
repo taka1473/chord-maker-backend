@@ -4,6 +4,17 @@ class Api::ScoresController < ApplicationController
     render json: scores, only: [ :id, :title, :key, :key_name, :tempo, :time_signature, :lyrics, :created_at ]
   end
 
+  def create
+    score = Score.new(score_params)
+    if score.save
+      render json: score, 
+        only: [ :id, :title, :key, :key_name, :tempo, :time_signature, :lyrics, :created_at ],
+        status: :created
+    else
+      render json: { errors: score.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
   def whole_score
     score = Score.includes(measures: :chords).find(params[:id])
     render json: score,
@@ -12,5 +23,11 @@ class Api::ScoresController < ApplicationController
         measures: { only: [ :id, :position ],
         include: {
           chords: { only: [ :id, :root_offset, :bass_offset, :chord_type, :position ] } } } }
+  end
+
+  private
+
+  def score_params
+    params.require(:score).permit(:title, :key_name, :tempo, :time_signature, :lyrics, :user_id, :published)
   end
 end

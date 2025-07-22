@@ -50,11 +50,16 @@ class Score < ApplicationRecord
   validates :key, presence: true, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 11 }
   validates :key_name, presence: true, inclusion: { in: KEY_MAP.keys }
   validates :tempo, numericality: { greater_than: 0, less_than: 500 }, allow_blank: true
-  validate :key_name_respond_to_key
+
+  before_validation :set_key
   
   scope :published, -> { where(published: true) }
 
   private
+
+  def set_key
+    self.key = KEY_MAP[key_name]
+  end
 
   def key_name_respond_to_key
     return if KEY_MAP[key_name] == key

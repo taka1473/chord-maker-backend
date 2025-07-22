@@ -16,6 +16,45 @@ paths:
                 type: array
                 items:
                   "$ref": "#/components/schemas/Score"
+    post:
+      summary: create score
+      parameters: []
+      responses:
+        '201':
+          description: score created with minimal data
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Score"
+        '422':
+          description: validation errors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                score:
+                  type: object
+                  properties:
+                    title:
+                      type: string
+                    key_name:
+                      type: string
+                    tempo:
+                      type: integer
+                    time_signature:
+                      type: string
+                    lyrics:
+                      type: string
+                    user_id:
+                      type: integer
+                    published:
+                      type: boolean
+                  required:
+                  - title
+                  - key_name
+                  - user_id
   "/api/scores/{id}/whole_score":
     parameters:
     - name: id
@@ -72,6 +111,9 @@ components:
       - title
       - key
       - key_name
+      - tempo
+      - time_signature
+      - lyrics
     Measure:
       type: object
       properties:
