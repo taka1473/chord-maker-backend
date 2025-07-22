@@ -29,12 +29,83 @@ RSpec.configure do |config|
             properties: {
               id: { type: :integer },
               title: { type: :string },
-              key: { type: :integer },
-              key_name: { type: :string },
-              tempo: { type: :integer, nullable: true },
-              time_signature: { type: :string, nullable: true }
+              key: { 
+                type: :integer, 
+                description: 'Key as integer (0: A, 1: A#, etc.)' 
+              },
+              key_name: { 
+                type: :string, 
+                description: 'Key name distinguishing A# from Bb' 
+              },
+              tempo: { 
+                type: :integer, 
+                nullable: true, 
+                description: 'Beats per minute' 
+              },
+              time_signature: { 
+                type: :string, 
+                nullable: true, 
+                description: 'Time signature (e.g., 4/4)' 
+              },
+              lyrics: { 
+                type: :string, 
+                nullable: true, 
+                description: 'Song lyrics' 
+              },
+              measures: {
+                type: :array,
+                items: { '$ref': '#/components/schemas/Measure' },
+                description: 'Array of measures containing chords'
+              }
             },
-            required: [:id, :title, :key, :key_name, :tempo, :time_signature]
+            required: [:id, :title, :key, :key_name, :tempo, :time_signature, :lyrics]
+          },
+          
+          Measure: {
+            type: :object,
+            properties: {
+              id: { 
+                type: :integer, 
+                description: 'Unique identifier for the measure' 
+              },
+              position: { 
+                type: :integer, 
+                description: 'Position of the measure in the score' 
+              },
+              chords: {
+                type: :array,
+                items: { '$ref': '#/components/schemas/Chord' },
+                description: 'Array of chords in this measure'
+              }
+            },
+            required: [:id, :position, :chords]
+          },
+          
+          Chord: {
+            type: :object,
+            properties: {
+              id: { 
+                type: :integer, 
+                description: 'Unique identifier for the chord' 
+              },
+              position: { 
+                type: :integer, 
+                description: 'Position of the chord within the measure' 
+              },
+              root_offset: { 
+                type: :integer, 
+                description: 'Root note offset (0-11, where 0=A, 1=A#, etc.)' 
+              },
+              bass_offset: { 
+                type: :integer, 
+                description: 'Bass note offset (0-11, where 0=A, 1=A#, etc.)' 
+              },
+              chord_type: { 
+                type: :string, 
+                description: 'Type of chord (e.g., major, minor, dominant7)' 
+              }
+            },
+            required: [:id, :position, :root_offset, :bass_offset, :chord_type]
           }
         }
       },

@@ -5,6 +5,8 @@ Rails.application.routes.draw do
   root "scores#index"
 
   namespace :api do
-    resources :scores, only: [:index, :show]
+    resources :scores, only: [:index] do
+      get :whole_score, on: :member
+    end
   end
 end
