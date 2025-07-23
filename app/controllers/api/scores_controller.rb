@@ -5,7 +5,8 @@ class Api::ScoresController < ApplicationController
   end
 
   def create
-    score = Score.new(score_params)
+    user = User.last # TODO: auth
+    score = Score.new(score_params.merge(user: user))
     if score.save
       render json: score, 
         only: [ :id, :title, :key, :key_name, :tempo, :time_signature, :lyrics, :created_at ],
