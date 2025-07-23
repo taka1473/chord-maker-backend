@@ -264,5 +264,19 @@ components:
       - root_offset
       - bass_offset
       - chord_type
+    ChordType:
+      type: string
+      enum:
+      - major
+      - minor
+      - dim
+      - aug
+      - sus2
+      - sus4
+      - add9
+      - maj7
+      - min7
+      - dim7
+      - aug7
 servers:
 - url: http://localhost:3000

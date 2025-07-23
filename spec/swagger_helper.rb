@@ -106,6 +106,11 @@ RSpec.configure do |config|
               }
             },
             required: [:id, :position, :root_offset, :bass_offset, :chord_type]
+          },
+
+          ChordType: {
+            type: :string,
+            enum: Chord::CHORD_TYPES
           }
         }
       },
