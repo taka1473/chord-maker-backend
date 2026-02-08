@@ -4,13 +4,16 @@ class ApplicationController < ActionController::API
   def authenticate!
     token = extract_token_from_header
     if token.nil?
+      Rails.logger.warn "[Auth] No Authorization header found"
       render json: { error: "Authorization header is required" }, status: :unauthorized
       return
     end
 
+    Rails.logger.info "[Auth] Token received (length=#{token.length})"
     payload = verify_firebase_token(token)
     return unless payload
 
+    Rails.logger.info "[Auth] Token verified, sub=#{payload['sub']}"
     @current_user = find_or_create_user(payload)
   end
 
@@ -28,6 +31,7 @@ class ApplicationController < ActionController::API
   def verify_firebase_token(token)
     FirebaseTokenVerifier.new.verify(token)
   rescue FirebaseTokenVerifier::VerificationError => e
+    Rails.logger.warn "[Auth] Token verification failed: #{e.message}"
     render json: { error: "Invalid token: #{e.message}" }, status: :unauthorized
     nil
   end
