@@ -1,14 +1,15 @@
 class Api::ScoresController < ApplicationController
+  before_action :authenticate!, only: [ :create, :upsert_whole_score ]
+
   def index
     scores = Score.all
     render json: scores, only: [ :id, :title, :key, :key_name, :tempo, :time_signature, :lyrics, :created_at ]
   end
 
   def create
-    user = User.last # TODO: auth
-    score = Score.new(score_params.merge(user: user))
+    score = Score.new(score_params.merge(user: current_user))
     if score.save
-      render json: score, 
+      render json: score,
         only: [ :id, :title, :key, :key_name, :tempo, :time_signature, :lyrics, :created_at ],
         status: :created
     else
@@ -44,10 +45,10 @@ class Api::ScoresController < ApplicationController
   private
 
   def score_params
-    params.require(:score).permit(:title, :key_name, :tempo, :time_signature, :user_id, :published)
+    params.require(:score).permit(:title, :key_name, :tempo, :time_signature, :published)
   end
 
   def whole_score_params
-    params.require(:score).permit(:title, :key_name, :tempo, :time_signature, :user_id, :published, measures_attributes: [:id, :position, :_destroy, chords_attributes: [:id, :root_offset, :bass_offset, :chord_type, :position, :_destroy]])
+    params.require(:score).permit(:title, :key_name, :tempo, :time_signature, :published, measures_attributes: [:id, :position, :_destroy, chords_attributes: [:id, :root_offset, :bass_offset, :chord_type, :position, :_destroy]])
   end
 end
