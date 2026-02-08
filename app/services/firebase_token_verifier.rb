@@ -10,6 +10,11 @@ class FirebaseTokenVerifier
 
   def verify(token)
     header = JWT.decode(token, nil, false).last
+
+    if emulator_mode?
+      return verify_emulator_token(token, header)
+    end
+
     kid = header["kid"]
     raise VerificationError, "No kid in token header" unless kid
 
@@ -53,5 +58,19 @@ class FirebaseTokenVerifier
       response = Net::HTTP.get(URI(GOOGLE_CERTS_URL))
       JSON.parse(response)
     end
+  end
+
+  def emulator_mode?
+    ENV["FIREBASE_AUTH_EMULATOR_HOST"].present?
+  end
+
+  def verify_emulator_token(token, header)
+    raise VerificationError, "Emulator mode only allowed in development/test" unless Rails.env.development? || Rails.env.test?
+
+    payload, = JWT.decode(token, nil, false, { algorithms: [ header["alg"] || "none" ] })
+
+    raise VerificationError, "sub is empty" if payload["sub"].blank?
+
+    payload
   end
 end
