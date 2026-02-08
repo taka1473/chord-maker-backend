@@ -13,8 +13,14 @@
 #  index_users_on_account_id  (account_id) UNIQUE
 #
 class User < ApplicationRecord
+  PLACEHOLDER_NAME_PREFIX = "user_"
+
   has_many :scores, dependent: :destroy
-  
-  validates :name, presence: true, length: { minimum: 2, maximum: 50 }
+
+  validates :name, presence: true, length: { minimum: 2, maximum: 50 }, uniqueness: true
   validates :account_id, presence: true, uniqueness: true
-end 
+
+  def handle_name_set?
+    !name.start_with?(PLACEHOLDER_NAME_PREFIX) || name.length > 13
+  end
+end

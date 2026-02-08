@@ -5,6 +5,9 @@ Rails.application.routes.draw do
   root "scores#index"
 
   namespace :api do
+    get "users/me", to: "users#me"
+    patch "users/me", to: "users#update_me"
+
     resources :scores, only: [:index, :create] do
       member do
         get :whole_score
