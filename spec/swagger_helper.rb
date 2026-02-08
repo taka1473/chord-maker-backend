@@ -112,6 +112,14 @@ RSpec.configure do |config|
             type: :string,
             enum: Chord::CHORD_TYPES
           }
+        },
+        securitySchemes: {
+          BearerAuth: {
+            type: :http,
+            scheme: :bearer,
+            bearerFormat: 'JWT',
+            description: 'Firebase ID Token'
+          }
         }
       },
       servers: [

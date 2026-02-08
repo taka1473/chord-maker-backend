@@ -22,6 +22,8 @@ RSpec.describe 'api/scores', type: :request do
     post('create score') do
       consumes 'application/json'
       produces 'application/json'
+      parameter name: :Authorization, in: :header, type: :string,
+        description: 'Firebase ID Token', required: true
       parameter name: :score, in: :body, schema: {
         type: :object,
         properties: {
@@ -32,10 +34,9 @@ RSpec.describe 'api/scores', type: :request do
               key_name: { type: :string },
               tempo: { type: :integer },
               time_signature: { type: :string },
-              user_id: { type: :integer },
               published: { type: :boolean }
             },
-            required: ['title', 'key_name', 'user_id']
+            required: ['title', 'key_name']
           }
         }
       }
@@ -44,6 +45,7 @@ RSpec.describe 'api/scores', type: :request do
         schema '$ref' => '#/components/schemas/Score'
 
         let(:user) { create(:user) }
+        let(:Authorization) { "Bearer mock-firebase-token" }
         let(:score) do
           {
             score: {
@@ -51,15 +53,16 @@ RSpec.describe 'api/scores', type: :request do
               key_name: 'C',
               tempo: 140,
               time_signature: '3/4',
-              user_id: user.id,
               published: false
             }
           }
         end
 
+        before { stub_firebase_verification(user) }
+
         run_test! do |response|
           data = JSON.parse(response.body)
-          
+
           expect(data['title']).to eq('New Test Song')
           expect(data['key']).to eq(3) # C maps to 3, automatically set by set_key callback
           expect(data['key_name']).to eq('C')
@@ -67,7 +70,7 @@ RSpec.describe 'api/scores', type: :request do
           expect(data['time_signature']).to eq('3/4')
           expect(data['id']).to be_present
           expect(data['created_at']).to be_present
-          
+
           # Verify the score was actually created in database
           created_score = Score.find(data['id'])
           expect(created_score.title).to eq('New Test Song')
@@ -78,19 +81,21 @@ RSpec.describe 'api/scores', type: :request do
 
       response(201, 'score created with minimal data') do
         let(:user) { create(:user) }
+        let(:Authorization) { "Bearer mock-firebase-token" }
         let(:score) do
           {
             score: {
               title: 'Minimal Song',
-              key_name: 'C',
-              user_id: user.id
+              key_name: 'C'
             }
           }
         end
 
+        before { stub_firebase_verification(user) }
+
         run_test! do |response|
           data = JSON.parse(response.body)
-          
+
           expect(data['title']).to eq('Minimal Song')
           expect(data['key']).to eq(3) # C maps to 3, automatically set by set_key callback
           expect(data['key_name']).to eq('C')
@@ -100,60 +105,9 @@ RSpec.describe 'api/scores', type: :request do
         end
       end
 
-      response(422, 'validation errors') do
-        context 'when title is missing' do
-          let(:user) { create(:user) }
-          let(:score) do
-            {
-              score: {
-                key_name: 'C',
-                user_id: user.id
-              }
-            }
-          end
-
-          run_test! do |response|
-            data = JSON.parse(response.body)
-            expect(data['errors']).to include("Title can't be blank")
-          end
-        end
-
-        context 'when key_name is missing' do
-          let(:user) { create(:user) }
-          let(:score) do
-            {
-              score: {
-                title: 'Test Song',
-                user_id: user.id
-              }
-            }
-          end
-
-          run_test! do |response|
-            data = JSON.parse(response.body)
-            expect(data['errors']).to include("Key name can't be blank")
-          end
-        end
-
-        context 'when key_name is invalid' do
-          let(:user) { create(:user) }
-          let(:score) do
-            {
-              score: {
-                title: 'Test Song',
-                key_name: 'InvalidKey',
-                user_id: user.id
-              }
-            }
-          end
-
-          run_test! do |response|
-            data = JSON.parse(response.body)
-            expect(data['errors']).to include("Key name is not included in the list")
-          end
-        end
-
-        context 'when user_id is missing' do
+      response(401, 'unauthorized') do
+        context 'when Authorization header is missing' do
+          let(:Authorization) { nil }
           let(:score) do
             {
               score: {
@@ -165,22 +119,84 @@ RSpec.describe 'api/scores', type: :request do
 
           run_test! do |response|
             data = JSON.parse(response.body)
-            expect(data['errors']).to include("User must exist")
+            expect(data['error']).to include("Authorization header is required")
+          end
+        end
+      end
+
+      response(422, 'validation errors') do
+        context 'when title is missing' do
+          let(:user) { create(:user) }
+          let(:Authorization) { "Bearer mock-firebase-token" }
+          let(:score) do
+            {
+              score: {
+                key_name: 'C'
+              }
+            }
+          end
+
+          before { stub_firebase_verification(user) }
+
+          run_test! do |response|
+            data = JSON.parse(response.body)
+            expect(data['errors']).to include("Title can't be blank")
+          end
+        end
+
+        context 'when key_name is missing' do
+          let(:user) { create(:user) }
+          let(:Authorization) { "Bearer mock-firebase-token" }
+          let(:score) do
+            {
+              score: {
+                title: 'Test Song'
+              }
+            }
+          end
+
+          before { stub_firebase_verification(user) }
+
+          run_test! do |response|
+            data = JSON.parse(response.body)
+            expect(data['errors']).to include("Key name can't be blank")
+          end
+        end
+
+        context 'when key_name is invalid' do
+          let(:user) { create(:user) }
+          let(:Authorization) { "Bearer mock-firebase-token" }
+          let(:score) do
+            {
+              score: {
+                title: 'Test Song',
+                key_name: 'InvalidKey'
+              }
+            }
+          end
+
+          before { stub_firebase_verification(user) }
+
+          run_test! do |response|
+            data = JSON.parse(response.body)
+            expect(data['errors']).to include("Key name is not included in the list")
           end
         end
 
         context 'when tempo is invalid' do
           let(:user) { create(:user) }
+          let(:Authorization) { "Bearer mock-firebase-token" }
           let(:score) do
             {
               score: {
                 title: 'Test Song',
                 key_name: 'C',
-                user_id: user.id,
                 tempo: 600
               }
             }
           end
+
+          before { stub_firebase_verification(user) }
 
           run_test! do |response|
             data = JSON.parse(response.body)
@@ -193,7 +209,7 @@ RSpec.describe 'api/scores', type: :request do
 
   path '/api/scores/{id}/whole_score' do
     parameter name: 'id', in: :path, type: :string, description: 'id'
-    
+
     get('show score') do
       produces 'application/json'
 
@@ -212,7 +228,7 @@ RSpec.describe 'api/scores', type: :request do
 
         run_test! do |response|
           data = JSON.parse(response.body)
-          
+
           # Test score attributes
           expect(data['id']).to eq(id)
           expect(data['title']).to eq('test')
@@ -220,27 +236,27 @@ RSpec.describe 'api/scores', type: :request do
           expect(data['key_name']).to eq('A')
           expect(data['tempo']).to eq(120)
           expect(data['time_signature']).to eq('4/4')
-          
+
           # Test measures are included
           expect(data['measures']).to be_present
           expect(data['measures'].length).to eq(2)
-          
+
           # Test measure attributes and order
           measures = data['measures'].sort_by { |m| m['position'] }
           expect(measures[0]['id']).to eq(measure1.id)
           expect(measures[0]['position']).to eq(1)
           expect(measures[1]['id']).to eq(measure2.id)
           expect(measures[1]['position']).to eq(2)
-          
+
           # Test chords are included in measures
           measure1_data = measures.find { |m| m['id'] == measure1.id }
           measure2_data = measures.find { |m| m['id'] == measure2.id }
-          
+
           expect(measure1_data['chords']).to be_present
           expect(measure1_data['chords'].length).to eq(2)
           expect(measure2_data['chords']).to be_present
           expect(measure2_data['chords'].length).to eq(1)
-          
+
           # Test chord attributes for measure1
           chords_m1 = measure1_data['chords'].sort_by { |c| c['position'] }
           expect(chords_m1[0]['id']).to eq(chord1.id)
@@ -248,13 +264,13 @@ RSpec.describe 'api/scores', type: :request do
           expect(chords_m1[0]['root_offset']).to eq(0)
           expect(chords_m1[0]['bass_offset']).to eq(0)
           expect(chords_m1[0]['chord_type']).to eq('major')
-          
+
           expect(chords_m1[1]['id']).to eq(chord2.id)
           expect(chords_m1[1]['position']).to eq(2)
           expect(chords_m1[1]['root_offset']).to eq(5)
           expect(chords_m1[1]['bass_offset']).to eq(5)
           expect(chords_m1[1]['chord_type']).to eq('minor')
-          
+
           # Test chord attributes for measure2
           chords_m2 = measure2_data['chords']
           expect(chords_m2[0]['id']).to eq(chord3.id)
@@ -274,10 +290,12 @@ RSpec.describe 'api/scores', type: :request do
 
   path '/api/scores/{id}/upsert_whole_score' do
     parameter name: 'id', in: :path, type: :string, description: 'id of existing score'
-    
+
     patch('upsert whole score') do
       consumes 'application/json'
       produces 'application/json'
+      parameter name: :Authorization, in: :header, type: :string,
+        description: 'Firebase ID Token', required: true
       parameter name: :score, in: :body, schema: {
         type: :object,
         properties: {
@@ -288,7 +306,6 @@ RSpec.describe 'api/scores', type: :request do
               key_name: { type: :string },
               tempo: { type: :integer },
               time_signature: { type: :string },
-              user_id: { type: :integer },
               published: { type: :boolean },
               measures_attributes: {
                 type: :array,
@@ -355,6 +372,7 @@ RSpec.describe 'api/scores', type: :request do
                }
 
         let(:user) { create(:user) }
+        let(:Authorization) { "Bearer mock-firebase-token" }
         let(:existing_score) { create(:score, title: 'Original Song', key_name: 'C', user: user) }
         let(:id) { existing_score.id }
         let(:score) do
@@ -364,7 +382,6 @@ RSpec.describe 'api/scores', type: :request do
               key_name: 'G',
               tempo: 100,
               time_signature: '4/4',
-              user_id: user.id,
               published: true,
               measures_attributes: [
                 {
@@ -386,9 +403,11 @@ RSpec.describe 'api/scores', type: :request do
           }
         end
 
+        before { stub_firebase_verification(user) }
+
         run_test! do |response|
           data = JSON.parse(response.body)
-          
+
           # Test score attributes were updated
           expect(data['title']).to eq('Updated Complete Song')
           expect(data['key']).to eq(10) # G maps to 10
@@ -396,36 +415,36 @@ RSpec.describe 'api/scores', type: :request do
           expect(data['tempo']).to eq(100)
           expect(data['time_signature']).to eq('4/4')
           expect(data['id']).to eq(existing_score.id)
-          
+
           # Test measures structure
           expect(data['measures']).to be_present
           expect(data['measures'].length).to eq(2)
-          
+
           measures = data['measures'].sort_by { |m| m['position'] }
-          
+
           # Test measure 1
           measure1 = measures[0]
           expect(measure1['position']).to eq(1)
           expect(measure1['chords'].length).to eq(2)
-          
+
           chords_m1 = measure1['chords'].sort_by { |c| c['position'] }
           expect(chords_m1[0]['position']).to eq(1)
           expect(chords_m1[0]['root_offset']).to eq(0)
           expect(chords_m1[0]['chord_type']).to eq('major')
-          
+
           expect(chords_m1[1]['position']).to eq(2)
           expect(chords_m1[1]['root_offset']).to eq(5)
           expect(chords_m1[1]['chord_type']).to eq('minor')
-          
+
           # Test measure 2
           measure2 = measures[1]
           expect(measure2['position']).to eq(2)
           expect(measure2['chords'].length).to eq(2)
-          
+
           chords_m2 = measure2['chords'].sort_by { |c| c['position'] }
           expect(chords_m2[0]['chord_type']).to eq('major')
           expect(chords_m2[1]['chord_type']).to eq('dim')
-          
+
           # Verify database records were updated
           updated_score = Score.find(data['id'])
           expect(updated_score.title).to eq('Updated Complete Song')
@@ -436,6 +455,7 @@ RSpec.describe 'api/scores', type: :request do
 
       response(200, 'upsert score with updating existing measures') do
         let(:user) { create(:user) }
+        let(:Authorization) { "Bearer mock-firebase-token" }
         let(:existing_score) { create(:score, title: 'Test Song', key_name: 'C', user: user) }
         let!(:measure1) { create(:measure, score: existing_score, position: 1) }
         let!(:chord1) { create(:chord, measure: measure1, position: 1, root_offset: 0, chord_type: 'major') }
@@ -445,7 +465,6 @@ RSpec.describe 'api/scores', type: :request do
             score: {
               title: 'Updated Song',
               key_name: 'D',
-              user_id: user.id,
               measures_attributes: [
                 {
                   id: measure1.id,
@@ -472,24 +491,26 @@ RSpec.describe 'api/scores', type: :request do
           }
         end
 
+        before { stub_firebase_verification(user) }
+
         run_test! do |response|
           data = JSON.parse(response.body)
-          
+
           expect(data['title']).to eq('Updated Song')
           expect(data['key']).to eq(5) # D maps to 5
           expect(data['measures'].length).to eq(1)
-          
+
           measure = data['measures'][0]
           expect(measure['id']).to eq(measure1.id) # Same measure ID
           expect(measure['chords'].length).to eq(2)
-          
+
           chords = measure['chords'].sort_by { |c| c['position'] }
-          
+
           # Updated chord
           expect(chords[0]['id']).to eq(chord1.id) # Same chord ID
           expect(chords[0]['root_offset']).to eq(2) # Updated value
           expect(chords[0]['chord_type']).to eq('minor') # Updated value
-          
+
           # New chord
           expect(chords[1]['id']).to be_present
           expect(chords[1]['id']).not_to eq(chord1.id) # Different ID
@@ -500,6 +521,7 @@ RSpec.describe 'api/scores', type: :request do
 
       response(200, 'upsert score with deleting measures and chords') do
         let(:user) { create(:user) }
+        let(:Authorization) { "Bearer mock-firebase-token" }
         let(:existing_score) { create(:score, title: 'Test Song', key_name: 'C', user: user) }
         let!(:measure1) { create(:measure, score: existing_score, position: 1) }
         let!(:measure2) { create(:measure, score: existing_score, position: 2) }
@@ -512,7 +534,6 @@ RSpec.describe 'api/scores', type: :request do
             score: {
               title: 'Simplified Song',
               key_name: 'C',
-              user_id: user.id,
               measures_attributes: [
                 {
                   id: measure1.id,
@@ -540,18 +561,20 @@ RSpec.describe 'api/scores', type: :request do
           }
         end
 
+        before { stub_firebase_verification(user) }
+
         run_test! do |response|
           data = JSON.parse(response.body)
-          
+
           expect(data['title']).to eq('Simplified Song')
           expect(data['measures'].length).to eq(1) # measure2 deleted
-          
+
           measure = data['measures'][0]
           expect(measure['id']).to eq(measure1.id)
           expect(measure['chords'].length).to eq(1) # chord2 deleted
-          
+
           expect(measure['chords'][0]['id']).to eq(chord1.id)
-          
+
           # Verify in database
           updated_score = Score.find(existing_score.id)
           expect(updated_score.measures.count).to eq(1)
@@ -563,17 +586,20 @@ RSpec.describe 'api/scores', type: :request do
       end
 
       response(404, 'score not found') do
+        let(:user) { create(:user) }
+        let(:Authorization) { "Bearer mock-firebase-token" }
         let(:id) { 99999 }
         let(:score) do
           {
             score: {
               title: 'Test Song',
               key_name: 'C',
-              user_id: 1,
               measures_attributes: []
             }
           }
         end
+
+        before { stub_firebase_verification(user) }
 
         run_test! do |response|
           data = JSON.parse(response.body)
@@ -584,6 +610,7 @@ RSpec.describe 'api/scores', type: :request do
       response(422, 'validation errors') do
         context 'when updating with invalid score data' do
           let(:user) { create(:user) }
+          let(:Authorization) { "Bearer mock-firebase-token" }
           let(:existing_score) { create(:score, title: 'Test Song', key_name: 'C', user: user) }
           let(:id) { existing_score.id }
           let(:score) do
@@ -591,7 +618,6 @@ RSpec.describe 'api/scores', type: :request do
               score: {
                 title: '', # Invalid - blank title
                 key_name: 'C',
-                user_id: user.id,
                 measures_attributes: [
                   {
                     position: 1,
@@ -604,6 +630,8 @@ RSpec.describe 'api/scores', type: :request do
             }
           end
 
+          before { stub_firebase_verification(user) }
+
           run_test! do |response|
             data = JSON.parse(response.body)
             expect(data['errors']).to include("Title can't be blank")
@@ -612,6 +640,7 @@ RSpec.describe 'api/scores', type: :request do
 
         context 'when updating with invalid chord data' do
           let(:user) { create(:user) }
+          let(:Authorization) { "Bearer mock-firebase-token" }
           let(:existing_score) { create(:score, title: 'Test Song', key_name: 'C', user: user) }
           let(:id) { existing_score.id }
           let(:score) do
@@ -619,7 +648,6 @@ RSpec.describe 'api/scores', type: :request do
               score: {
                 title: 'Test Song',
                 key_name: 'C',
-                user_id: user.id,
                 measures_attributes: [
                   {
                     position: 1,
@@ -632,6 +660,8 @@ RSpec.describe 'api/scores', type: :request do
             }
           end
 
+          before { stub_firebase_verification(user) }
+
           run_test! do |response|
             data = JSON.parse(response.body)
             expect(data['errors']).to include("Measures chords root offset must be less than or equal to 11")
@@ -640,6 +670,7 @@ RSpec.describe 'api/scores', type: :request do
 
         context 'when updating with invalid key_name' do
           let(:user) { create(:user) }
+          let(:Authorization) { "Bearer mock-firebase-token" }
           let(:existing_score) { create(:score, title: 'Test Song', key_name: 'C', user: user) }
           let(:id) { existing_score.id }
           let(:score) do
@@ -647,11 +678,12 @@ RSpec.describe 'api/scores', type: :request do
               score: {
                 title: 'Test Song',
                 key_name: 'InvalidKey',
-                user_id: user.id,
                 measures_attributes: []
               }
             }
           end
+
+          before { stub_firebase_verification(user) }
 
           run_test! do |response|
             data = JSON.parse(response.body)
@@ -661,6 +693,7 @@ RSpec.describe 'api/scores', type: :request do
 
         context 'when updating with invalid tempo' do
           let(:user) { create(:user) }
+          let(:Authorization) { "Bearer mock-firebase-token" }
           let(:existing_score) { create(:score, title: 'Test Song', key_name: 'C', user: user) }
           let(:id) { existing_score.id }
           let(:score) do
@@ -669,11 +702,12 @@ RSpec.describe 'api/scores', type: :request do
                 title: 'Test Song',
                 key_name: 'C',
                 tempo: 600, # Invalid tempo
-                user_id: user.id,
                 measures_attributes: []
               }
             }
           end
+
+          before { stub_firebase_verification(user) }
 
           run_test! do |response|
             data = JSON.parse(response.body)

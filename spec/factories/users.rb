@@ -14,7 +14,7 @@
 #
 FactoryBot.define do
   factory :user do
-    name { "John Doe" }
+    sequence(:name) { |n| "User #{n}" }
     sequence(:account_id) { |n| "user_#{n}" }
   end
 end 
