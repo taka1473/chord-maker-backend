@@ -3,6 +3,8 @@
 # Table name: measures
 #
 #  id         :bigint           not null, primary key
+#  key        :integer
+#  key_name   :string
 #  position   :integer          not null
 #  created_at :datetime         not null
 #  updated_at :datetime         not null

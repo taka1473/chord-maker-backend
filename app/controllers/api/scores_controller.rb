@@ -22,7 +22,7 @@ class Api::ScoresController < ApplicationController
     render json: score,
       only: [ :id, :title, :key, :key_name, :tempo, :time_signature, :lyrics],
       include: {
-        measures: { only: [ :id, :position ],
+        measures: { only: [ :id, :position, :key, :key_name ],
         include: {
           chords: { only: [ :id, :root_offset, :bass_offset, :chord_type, :position ] } } } }
   end
@@ -33,7 +33,7 @@ class Api::ScoresController < ApplicationController
     if score.save
       render json: score,
         only: [ :id, :title, :key, :key_name, :tempo, :time_signature, :lyrics],
-        include: { measures: { only: [ :id, :position ], include: { chords: { only: [ :id, :root_offset, :bass_offset, :chord_type, :position ] } } } },
+        include: { measures: { only: [ :id, :position, :key, :key_name ], include: { chords: { only: [ :id, :root_offset, :bass_offset, :chord_type, :position ] } } } },
         status: :ok
     else
       render json: { errors: score.errors.full_messages }, status: :unprocessable_entity
@@ -49,6 +49,6 @@ class Api::ScoresController < ApplicationController
   end
 
   def whole_score_params
-    params.require(:score).permit(:title, :key_name, :tempo, :time_signature, :published, measures_attributes: [:id, :position, :_destroy, chords_attributes: [:id, :root_offset, :bass_offset, :chord_type, :position, :_destroy]])
+    params.require(:score).permit(:title, :key_name, :tempo, :time_signature, :published, measures_attributes: [:id, :position, :key_name, :_destroy, chords_attributes: [:id, :root_offset, :bass_offset, :chord_type, :position, :_destroy]])
   end
 end
