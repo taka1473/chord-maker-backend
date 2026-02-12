@@ -14,5 +14,9 @@ Rails.application.routes.draw do
         patch :upsert_whole_score
       end
     end
+
+    namespace :me do
+      resources :scores, only: [:index]
+    end
   end
 end
