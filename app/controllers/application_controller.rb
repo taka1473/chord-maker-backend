@@ -17,6 +17,20 @@ class ApplicationController < ActionController::API
     @current_user = find_or_create_user(payload)
   end
 
+  def authenticate_if_present
+    token = extract_token_from_header
+    return unless token
+    payload = verify_firebase_token(token)
+    return unless payload
+    @current_user = find_or_create_user(payload)
+  end
+
+  def authorize_score_owner!
+    unless @score.user_id == current_user&.id
+      render json: { error: "Forbidden" }, status: :forbidden
+    end
+  end
+
   def current_user
     @current_user
   end
