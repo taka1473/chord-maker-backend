@@ -6,14 +6,14 @@ class Api::ScoresController < ApplicationController
 
   def index
     scores = Score.published.order(created_at: :desc)
-    render json: scores, only: [ :id, :title, :key, :key_name, :tempo, :time_signature, :lyrics, :created_at, :published ]
+    render json: scores, only: [ :id, :title, :artist, :key, :key_name, :tempo, :time_signature, :lyrics, :created_at, :published ]
   end
 
   def create
     score = Score.new(score_params.merge(user: current_user))
     if score.save
       render json: score,
-        only: [ :id, :title, :key, :key_name, :tempo, :time_signature, :lyrics, :created_at, :published ],
+        only: [ :id, :title, :artist, :key, :key_name, :tempo, :time_signature, :lyrics, :created_at, :published ],
         status: :created
     else
       render json: { errors: score.errors.full_messages }, status: :unprocessable_entity
@@ -26,7 +26,7 @@ class Api::ScoresController < ApplicationController
       return
     end
     render json: @score,
-      only: [ :id, :title, :key, :key_name, :tempo, :time_signature, :lyrics, :published ],
+      only: [ :id, :title, :artist, :key, :key_name, :tempo, :time_signature, :lyrics, :published ],
       include: {
         measures: { only: [ :id, :position, :key, :key_name ],
         include: {
@@ -37,7 +37,7 @@ class Api::ScoresController < ApplicationController
     @score.assign_attributes(whole_score_params)
     if @score.save
       render json: @score,
-        only: [ :id, :title, :key, :key_name, :tempo, :time_signature, :lyrics, :published ],
+        only: [ :id, :title, :artist, :key, :key_name, :tempo, :time_signature, :lyrics, :published ],
         include: { measures: { only: [ :id, :position, :key, :key_name ], include: { chords: { only: [ :id, :root_offset, :bass_offset, :chord_type, :position ] } } } },
         status: :ok
     else
@@ -54,10 +54,10 @@ class Api::ScoresController < ApplicationController
   end
 
   def score_params
-    params.require(:score).permit(:title, :key_name, :tempo, :time_signature, :published)
+    params.require(:score).permit(:title, :artist, :key_name, :tempo, :time_signature, :published)
   end
 
   def whole_score_params
-    params.require(:score).permit(:title, :key_name, :tempo, :time_signature, :published, measures_attributes: [:id, :position, :key_name, :_destroy, chords_attributes: [:id, :root_offset, :bass_offset, :chord_type, :position, :_destroy]])
+    params.require(:score).permit(:title, :artist, :key_name, :tempo, :time_signature, :published, measures_attributes: [:id, :position, :key_name, :_destroy, chords_attributes: [:id, :root_offset, :bass_offset, :chord_type, :position, :_destroy]])
   end
 end

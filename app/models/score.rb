@@ -3,6 +3,7 @@
 # Table name: scores
 #
 #  id                                  :bigint           not null, primary key
+#  artist                              :string
 #  key(0: A, 1: A#...)                 :integer          not null
 #  key_name(distinguishing A# from Bb) :string           not null
 #  lyrics                              :text
