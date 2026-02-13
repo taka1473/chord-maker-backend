@@ -8,7 +8,7 @@ Rails.application.routes.draw do
     get "users/me", to: "users#me"
     patch "users/me", to: "users#update_me"
 
-    resources :scores, only: [:index, :create] do
+    resources :scores, only: [:index, :create, :destroy] do
       member do
         get :whole_score
         patch :upsert_whole_score

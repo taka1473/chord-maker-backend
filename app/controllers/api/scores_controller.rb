@@ -1,8 +1,8 @@
 class Api::ScoresController < ApplicationController
-  before_action :authenticate!, only: [ :create, :upsert_whole_score ]
+  before_action :authenticate!, only: [ :create, :upsert_whole_score, :destroy ]
   before_action :authenticate_if_present, only: [ :whole_score ]
-  before_action :set_score, only: [ :whole_score, :upsert_whole_score ]
-  before_action :authorize_score_owner!, only: [ :upsert_whole_score ]
+  before_action :set_score, only: [ :whole_score, :upsert_whole_score, :destroy ]
+  before_action :authorize_score_owner!, only: [ :upsert_whole_score, :destroy ]
 
   def index
     scores = Score.published.order(created_at: :desc)
@@ -43,6 +43,11 @@ class Api::ScoresController < ApplicationController
     else
       render json: { errors: @score.errors.full_messages }, status: :unprocessable_entity
     end
+  end
+
+  def destroy
+    @score.destroy!
+    head :no_content
   end
 
   private
