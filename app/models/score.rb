@@ -47,6 +47,8 @@ class Score < ApplicationRecord
   belongs_to :user
   has_many :measures, dependent: :destroy
   has_many :chords, through: :measures
+  has_many :score_tags, dependent: :destroy
+  has_many :tags, through: :score_tags
   
   validates :title, presence: true, length: { minimum: 1, maximum: 100 }
   validates :key, presence: true, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 11 }
@@ -59,6 +61,16 @@ class Score < ApplicationRecord
   accepts_nested_attributes_for :chords, allow_destroy: true
   
   scope :published, -> { where(published: true) }
+
+  def tag_names
+    tags.pluck(:name)
+  end
+
+  def tag_names=(names)
+    self.tags = Array(names).map(&:strip).reject(&:blank?).uniq.map do |name|
+      Tag.find_or_create_by!(name: name)
+    end
+  end
 
   private
 

@@ -10,7 +10,7 @@ RSpec.describe 'api/scores', type: :request do
       response(200, 'successful') do
         schema type: :array, items: { '$ref' => '#/components/schemas/Score' }
 
-        before { create_list(:score, 3) }
+        before { create_list(:score, 3, :published) }
 
         run_test! do |response|
           data = JSON.parse(response.body)
@@ -217,7 +217,7 @@ RSpec.describe 'api/scores', type: :request do
         schema '$ref' => '#/components/schemas/Score'
 
         let(:score) do
-          create(:score, title: 'test', key_name: 'A', tempo: 120, time_signature: '4/4')
+          create(:score, :published, title: 'test', key_name: 'A', tempo: 120, time_signature: '4/4')
         end
         let!(:measure1) { create(:measure, score: score, position: 1) }
         let!(:measure2) { create(:measure, score: score, position: 2) }

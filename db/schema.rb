@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_12_154202) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_13_151849) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -35,6 +35,16 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_12_154202) do
     t.index ["score_id"], name: "index_measures_on_score_id"
   end
 
+  create_table "score_tags", force: :cascade do |t|
+    t.bigint "score_id", null: false
+    t.bigint "tag_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["score_id", "tag_id"], name: "index_score_tags_on_score_id_and_tag_id", unique: true
+    t.index ["score_id"], name: "index_score_tags_on_score_id"
+    t.index ["tag_id"], name: "index_score_tags_on_tag_id"
+  end
+
   create_table "scores", force: :cascade do |t|
     t.string "title", null: false
     t.bigint "user_id", null: false
@@ -50,6 +60,13 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_12_154202) do
     t.index ["user_id"], name: "index_scores_on_user_id"
   end
 
+  create_table "tags", force: :cascade do |t|
+    t.string "name", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["name"], name: "index_tags_on_name", unique: true
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "name", null: false
     t.string "account_id", null: false
@@ -60,5 +77,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_12_154202) do
 
   add_foreign_key "chords", "measures"
   add_foreign_key "measures", "scores"
+  add_foreign_key "score_tags", "scores"
+  add_foreign_key "score_tags", "tags"
   add_foreign_key "scores", "users"
 end
