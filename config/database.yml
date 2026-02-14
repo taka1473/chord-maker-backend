@@ -25,21 +25,20 @@ test:
   database: chord_maker_test
 
 
-# Store production database in the storage/ directory, which by default
-# is mounted as a persistent Docker volume in config/deploy.yml.
+# Production database served by PostgreSQL accessory via Kamal.
+# DB_HOST is set in config/deploy.yml (defaults to "db" for docker compose).
 production:
   primary:
     <<: *default
+    host: <%= ENV.fetch("DB_HOST", "db") %>
     database: chord_maker_production
   cache:
     <<: *default
+    host: <%= ENV.fetch("DB_HOST", "db") %>
     database: chord_maker_production_cache
     migrations_paths: db/cache_migrate
   queue:
     <<: *default
+    host: <%= ENV.fetch("DB_HOST", "db") %>
     database: chord_maker_production_queue
     migrations_paths: db/queue_migrate
-  cable:
-    <<: *default
-    database: chord_maker_production_cable
-    migrations_paths: db/cable_migrate
