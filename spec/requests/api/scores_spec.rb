@@ -77,6 +77,30 @@ RSpec.describe 'api/scores', type: :request do
 
     end
 
+    describe 'GET /api/scores sorting' do
+      it 'returns scores in newest-first order by default' do
+        old_score = create(:score, :published, title: 'Old Song', created_at: 2.days.ago)
+        new_score = create(:score, :published, title: 'New Song', created_at: 1.hour.ago)
+
+        get '/api/scores'
+
+        data = JSON.parse(response.body)
+        expect(data[0]['title']).to eq('New Song')
+        expect(data[1]['title']).to eq('Old Song')
+      end
+
+      it 'returns scores in oldest-first order when sort=oldest' do
+        old_score = create(:score, :published, title: 'Old Song', created_at: 2.days.ago)
+        new_score = create(:score, :published, title: 'New Song', created_at: 1.hour.ago)
+
+        get '/api/scores', params: { sort: 'oldest' }
+
+        data = JSON.parse(response.body)
+        expect(data[0]['title']).to eq('Old Song')
+        expect(data[1]['title']).to eq('New Song')
+      end
+    end
+
     describe 'GET /api/scores search filters' do
       it 'filters by multiple tags (AND)' do
         rock_tag = create(:tag, name: 'rock')

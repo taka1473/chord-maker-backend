@@ -8,7 +8,8 @@ class Api::ScoresController < ApplicationController
   before_action :authorize_score_owner!, only: [ :upsert_whole_score, :destroy ]
 
   def index
-    scores = Score.published.includes(:tags).order(created_at: :desc)
+    direction = params[:sort] == "oldest" ? :asc : :desc
+    scores = Score.published.includes(:tags).order(created_at: direction)
     scores = scores.search(params[:search]) if params[:search].present?
     scores = scores.by_tags(Array(params[:tags])) if params[:tags].present?
     render json: scores, only: SCORE_LIST_FIELDS, methods: [ :tag_names ]
