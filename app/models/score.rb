@@ -61,6 +61,16 @@ class Score < ApplicationRecord
   accepts_nested_attributes_for :chords, allow_destroy: true
   
   scope :published, -> { where(published: true) }
+  scope :search, ->(query) {
+    where("title ILIKE :q OR artist ILIKE :q", q: "%#{query}%")
+  }
+  scope :by_tags, ->(tag_names) {
+    where(id: ScoreTag.joins(:tag)
+      .where(tags: { name: tag_names })
+      .group(:score_id)
+      .having("COUNT(DISTINCT tags.name) = ?", tag_names.size)
+      .select(:score_id))
+  }
 
   def tag_names
     tags.pluck(:name)

@@ -6,6 +6,10 @@ RSpec.describe 'api/scores', type: :request do
 
     get('list scores') do
       produces 'application/json'
+      parameter name: :search, in: :query, type: :string, required: false,
+        description: 'Search by title or artist'
+      parameter name: :'tags[]', in: :query, type: :array, items: { type: :string },
+        required: false, description: 'Filter by tag names (AND)'
 
       response(200, 'successful') do
         schema type: :array, items: { '$ref' => '#/components/schemas/Score' }
@@ -16,6 +20,92 @@ RSpec.describe 'api/scores', type: :request do
           data = JSON.parse(response.body)
           expect(data.length).to eq(3)
         end
+      end
+
+      response(200, 'filtered by search query on title') do
+        let!(:match) { create(:score, :published, title: 'Yesterday', artist: 'Beatles') }
+        let!(:no_match) { create(:score, :published, title: 'Bohemian Rhapsody', artist: 'Queen') }
+        let(:search) { 'yesterday' }
+
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data.length).to eq(1)
+          expect(data[0]['title']).to eq('Yesterday')
+        end
+      end
+
+      response(200, 'filtered by search query on artist') do
+        let!(:match) { create(:score, :published, title: 'Let It Be', artist: 'Beatles') }
+        let!(:no_match) { create(:score, :published, title: 'Imagine', artist: 'John Lennon') }
+        let(:search) { 'beatles' }
+
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data.length).to eq(1)
+          expect(data[0]['artist']).to eq('Beatles')
+        end
+      end
+
+      response(200, 'filtered by tags') do
+        let(:rock_tag) { create(:tag, name: 'rock') }
+        let(:pop_tag) { create(:tag, name: 'pop') }
+        let(:jazz_tag) { create(:tag, name: 'jazz') }
+        let!(:rock_pop_score) do
+          score = create(:score, :published, title: 'Rock Pop Song')
+          score.tags = [rock_tag, pop_tag]
+          score
+        end
+        let!(:rock_only_score) do
+          score = create(:score, :published, title: 'Rock Only Song')
+          score.tags = [rock_tag]
+          score
+        end
+        let!(:jazz_score) do
+          score = create(:score, :published, title: 'Jazz Song')
+          score.tags = [jazz_tag]
+          score
+        end
+        let(:'tags[]') { ['rock'] }
+
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data.length).to eq(2)
+          titles = data.map { |s| s['title'] }
+          expect(titles).to include('Rock Pop Song', 'Rock Only Song')
+        end
+      end
+
+    end
+
+    describe 'GET /api/scores search filters' do
+      it 'filters by multiple tags (AND)' do
+        rock_tag = create(:tag, name: 'rock')
+        pop_tag = create(:tag, name: 'pop')
+        both = create(:score, :published, title: 'Rock Pop Song')
+        both.tags = [rock_tag, pop_tag]
+        one = create(:score, :published, title: 'Rock Only Song')
+        one.tags = [rock_tag]
+
+        get '/api/scores', params: { tags: ['rock', 'pop'] }
+
+        data = JSON.parse(response.body)
+        expect(data.length).to eq(1)
+        expect(data[0]['title']).to eq('Rock Pop Song')
+      end
+
+      it 'filters by search and tags combined' do
+        rock_tag = create(:tag, name: 'rock')
+        match = create(:score, :published, title: 'Yesterday', artist: 'Beatles')
+        match.tags = [rock_tag]
+        create(:score, :published, title: 'Yesterday Once More', artist: 'Carpenters')
+        tag_only = create(:score, :published, title: 'Bohemian Rhapsody', artist: 'Queen')
+        tag_only.tags = [rock_tag]
+
+        get '/api/scores', params: { search: 'yesterday', tags: ['rock'] }
+
+        data = JSON.parse(response.body)
+        expect(data.length).to eq(1)
+        expect(data[0]['title']).to eq('Yesterday')
       end
     end
 
