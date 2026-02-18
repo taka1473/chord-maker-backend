@@ -1,6 +1,7 @@
 class Api::ScoresController < ApplicationController
   SCORE_LIST_FIELDS = [ :id, :title, :artist, :key, :key_name, :tempo, :time_signature, :lyrics, :created_at, :published ].freeze
   SCORE_DETAIL_FIELDS = [ :id, :title, :artist, :key, :key_name, :tempo, :time_signature, :lyrics, :published ].freeze
+  PER_PAGE = 20
 
   before_action :authenticate!, only: [ :create, :upsert_whole_score, :destroy ]
   before_action :authenticate_if_present, only: [ :whole_score ]
@@ -12,7 +13,17 @@ class Api::ScoresController < ApplicationController
     scores = Score.published.includes(:tags).order(created_at: direction)
     scores = scores.search(params[:search]) if params[:search].present?
     scores = scores.by_tags(Array(params[:tags])) if params[:tags].present?
-    render json: scores, only: SCORE_LIST_FIELDS, methods: [ :tag_names ]
+
+    total_count = scores.count
+    page = [ params[:page].to_i, 1 ].max
+    scores = scores.limit(PER_PAGE).offset((page - 1) * PER_PAGE)
+
+    render json: {
+      scores: scores.as_json(only: SCORE_LIST_FIELDS, methods: [ :tag_names ]),
+      total_count: total_count,
+      page: page,
+      per_page: PER_PAGE
+    }
   end
 
   def create

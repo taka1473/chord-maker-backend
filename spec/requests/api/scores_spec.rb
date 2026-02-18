@@ -12,13 +12,14 @@ RSpec.describe 'api/scores', type: :request do
         required: false, description: 'Filter by tag names (AND)'
 
       response(200, 'successful') do
-        schema type: :array, items: { '$ref' => '#/components/schemas/Score' }
-
         before { create_list(:score, 3, :published) }
 
         run_test! do |response|
           data = JSON.parse(response.body)
-          expect(data.length).to eq(3)
+          expect(data['scores'].length).to eq(3)
+          expect(data['total_count']).to eq(3)
+          expect(data['page']).to eq(1)
+          expect(data['per_page']).to eq(20)
         end
       end
 
@@ -29,8 +30,8 @@ RSpec.describe 'api/scores', type: :request do
 
         run_test! do |response|
           data = JSON.parse(response.body)
-          expect(data.length).to eq(1)
-          expect(data[0]['title']).to eq('Yesterday')
+          expect(data['scores'].length).to eq(1)
+          expect(data['scores'][0]['title']).to eq('Yesterday')
         end
       end
 
@@ -41,8 +42,8 @@ RSpec.describe 'api/scores', type: :request do
 
         run_test! do |response|
           data = JSON.parse(response.body)
-          expect(data.length).to eq(1)
-          expect(data[0]['artist']).to eq('Beatles')
+          expect(data['scores'].length).to eq(1)
+          expect(data['scores'][0]['artist']).to eq('Beatles')
         end
       end
 
@@ -69,8 +70,8 @@ RSpec.describe 'api/scores', type: :request do
 
         run_test! do |response|
           data = JSON.parse(response.body)
-          expect(data.length).to eq(2)
-          titles = data.map { |s| s['title'] }
+          expect(data['scores'].length).to eq(2)
+          titles = data['scores'].map { |s| s['title'] }
           expect(titles).to include('Rock Pop Song', 'Rock Only Song')
         end
       end
@@ -79,25 +80,60 @@ RSpec.describe 'api/scores', type: :request do
 
     describe 'GET /api/scores sorting' do
       it 'returns scores in newest-first order by default' do
-        old_score = create(:score, :published, title: 'Old Song', created_at: 2.days.ago)
-        new_score = create(:score, :published, title: 'New Song', created_at: 1.hour.ago)
+        create(:score, :published, title: 'Old Song', created_at: 2.days.ago)
+        create(:score, :published, title: 'New Song', created_at: 1.hour.ago)
 
         get '/api/scores'
 
         data = JSON.parse(response.body)
-        expect(data[0]['title']).to eq('New Song')
-        expect(data[1]['title']).to eq('Old Song')
+        expect(data['scores'][0]['title']).to eq('New Song')
+        expect(data['scores'][1]['title']).to eq('Old Song')
       end
 
       it 'returns scores in oldest-first order when sort=oldest' do
-        old_score = create(:score, :published, title: 'Old Song', created_at: 2.days.ago)
-        new_score = create(:score, :published, title: 'New Song', created_at: 1.hour.ago)
+        create(:score, :published, title: 'Old Song', created_at: 2.days.ago)
+        create(:score, :published, title: 'New Song', created_at: 1.hour.ago)
 
         get '/api/scores', params: { sort: 'oldest' }
 
         data = JSON.parse(response.body)
-        expect(data[0]['title']).to eq('Old Song')
-        expect(data[1]['title']).to eq('New Song')
+        expect(data['scores'][0]['title']).to eq('Old Song')
+        expect(data['scores'][1]['title']).to eq('New Song')
+      end
+    end
+
+    describe 'GET /api/scores pagination' do
+      it 'returns first page with 20 items by default' do
+        create_list(:score, 25, :published)
+
+        get '/api/scores'
+
+        data = JSON.parse(response.body)
+        expect(data['scores'].length).to eq(20)
+        expect(data['total_count']).to eq(25)
+        expect(data['page']).to eq(1)
+        expect(data['per_page']).to eq(20)
+      end
+
+      it 'returns second page with remaining items' do
+        create_list(:score, 25, :published)
+
+        get '/api/scores', params: { page: 2 }
+
+        data = JSON.parse(response.body)
+        expect(data['scores'].length).to eq(5)
+        expect(data['total_count']).to eq(25)
+        expect(data['page']).to eq(2)
+      end
+
+      it 'defaults to page 1 for invalid page param' do
+        create_list(:score, 3, :published)
+
+        get '/api/scores', params: { page: 0 }
+
+        data = JSON.parse(response.body)
+        expect(data['page']).to eq(1)
+        expect(data['scores'].length).to eq(3)
       end
     end
 
@@ -113,8 +149,8 @@ RSpec.describe 'api/scores', type: :request do
         get '/api/scores', params: { tags: ['rock', 'pop'] }
 
         data = JSON.parse(response.body)
-        expect(data.length).to eq(1)
-        expect(data[0]['title']).to eq('Rock Pop Song')
+        expect(data['scores'].length).to eq(1)
+        expect(data['scores'][0]['title']).to eq('Rock Pop Song')
       end
 
       it 'filters by search and tags combined' do
@@ -128,8 +164,8 @@ RSpec.describe 'api/scores', type: :request do
         get '/api/scores', params: { search: 'yesterday', tags: ['rock'] }
 
         data = JSON.parse(response.body)
-        expect(data.length).to eq(1)
-        expect(data[0]['title']).to eq('Yesterday')
+        expect(data['scores'].length).to eq(1)
+        expect(data['scores'][0]['title']).to eq('Yesterday')
       end
     end
 
