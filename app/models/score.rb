@@ -8,6 +8,7 @@
 #  key_name(distinguishing A# from Bb) :string           not null
 #  lyrics                              :text
 #  published                           :boolean          default(FALSE)
+#  slug                                :string           not null
 #  tempo                               :integer
 #  time_signature                      :string
 #  title                               :string           not null
@@ -17,6 +18,7 @@
 #
 # Indexes
 #
+#  index_scores_on_slug     (slug) UNIQUE
 #  index_scores_on_user_id  (user_id)
 #
 # Foreign Keys
@@ -51,11 +53,13 @@ class Score < ApplicationRecord
   has_many :tags, through: :score_tags
   
   validates :title, presence: true, length: { minimum: 1, maximum: 100 }
+  validates :slug, presence: true, uniqueness: true
   validates :key, presence: true, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 11 }
   validates :key_name, presence: true, inclusion: { in: KEY_MAP.keys }
   validates :tempo, numericality: { greater_than: 0, less_than: 500 }, allow_blank: true
 
   before_validation :set_key
+  before_validation :generate_slug, on: :create
 
   accepts_nested_attributes_for :measures, allow_destroy: true
   accepts_nested_attributes_for :chords, allow_destroy: true
@@ -86,6 +90,16 @@ class Score < ApplicationRecord
 
   def set_key
     self.key = KEY_MAP[key_name]
+  end
+
+  def generate_slug
+    return if slug.present?
+
+    base = title.to_s.parameterize.presence || "score"
+    loop do
+      self.slug = "#{base}-#{SecureRandom.alphanumeric(6).downcase}"
+      break unless Score.exists?(slug: slug)
+    end
   end
 
   def key_name_respond_to_key

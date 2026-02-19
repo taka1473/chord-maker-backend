@@ -8,6 +8,7 @@
 #  key_name(distinguishing A# from Bb) :string           not null
 #  lyrics                              :text
 #  published                           :boolean          default(FALSE)
+#  slug                                :string           not null
 #  tempo                               :integer
 #  time_signature                      :string
 #  title                               :string           not null
@@ -17,6 +18,7 @@
 #
 # Indexes
 #
+#  index_scores_on_slug     (slug) UNIQUE
 #  index_scores_on_user_id  (user_id)
 #
 # Foreign Keys

@@ -219,6 +219,7 @@ RSpec.describe 'api/scores', type: :request do
           expect(data['tempo']).to eq(140)
           expect(data['time_signature']).to eq('3/4')
           expect(data['id']).to be_present
+          expect(data['slug']).to be_present
           expect(data['created_at']).to be_present
 
           # Verify the score was actually created in database
@@ -358,7 +359,7 @@ RSpec.describe 'api/scores', type: :request do
   end
 
   path '/api/scores/{id}/whole_score' do
-    parameter name: 'id', in: :path, type: :string, description: 'id'
+    parameter name: 'id', in: :path, type: :string, description: 'slug'
 
     get('show score') do
       produces 'application/json'
@@ -374,13 +375,13 @@ RSpec.describe 'api/scores', type: :request do
         let!(:chord1) { create(:chord, measure: measure1, position: 1, root_offset: 0, bass_offset: 0, chord_type: 'major') }
         let!(:chord2) { create(:chord, measure: measure1, position: 2, root_offset: 5, bass_offset: 5, chord_type: 'minor') }
         let!(:chord3) { create(:chord, measure: measure2, position: 1, root_offset: 7, bass_offset: 7, chord_type: 'major') }
-        let(:id) { score.id }
+        let(:id) { score.slug }
 
         run_test! do |response|
           data = JSON.parse(response.body)
 
           # Test score attributes
-          expect(data['id']).to eq(id)
+          expect(data['id']).to eq(score.id)
           expect(data['title']).to eq('test')
           expect(data['key']).to eq(0)
           expect(data['key_name']).to eq('A')
@@ -432,14 +433,14 @@ RSpec.describe 'api/scores', type: :request do
       end
 
       response(404, 'not found') do
-        let(:id) { 'invalid' }
+        let(:id) { 'nonexistent-slug' }
         run_test!
       end
     end
     end
 
   path '/api/scores/{id}/upsert_whole_score' do
-    parameter name: 'id', in: :path, type: :string, description: 'id of existing score'
+    parameter name: 'id', in: :path, type: :string, description: 'slug of existing score'
 
     patch('upsert whole score') do
       consumes 'application/json'
@@ -524,7 +525,7 @@ RSpec.describe 'api/scores', type: :request do
         let(:user) { create(:user) }
         let(:Authorization) { "Bearer mock-firebase-token" }
         let(:existing_score) { create(:score, title: 'Original Song', key_name: 'C', user: user) }
-        let(:id) { existing_score.id }
+        let(:id) { existing_score.slug }
         let(:score) do
           {
             score: {
@@ -609,7 +610,7 @@ RSpec.describe 'api/scores', type: :request do
         let(:existing_score) { create(:score, title: 'Test Song', key_name: 'C', user: user) }
         let!(:measure1) { create(:measure, score: existing_score, position: 1) }
         let!(:chord1) { create(:chord, measure: measure1, position: 1, root_offset: 0, chord_type: 'major') }
-        let(:id) { existing_score.id }
+        let(:id) { existing_score.slug }
         let(:score) do
           {
             score: {
@@ -678,7 +679,7 @@ RSpec.describe 'api/scores', type: :request do
         let!(:chord1) { create(:chord, measure: measure1, position: 1, root_offset: 0, chord_type: 'major') }
         let!(:chord2) { create(:chord, measure: measure1, position: 2, root_offset: 5, chord_type: 'minor') }
         let!(:chord3) { create(:chord, measure: measure2, position: 1, root_offset: 7, chord_type: 'dim') }
-        let(:id) { existing_score.id }
+        let(:id) { existing_score.slug }
         let(:score) do
           {
             score: {
@@ -738,7 +739,7 @@ RSpec.describe 'api/scores', type: :request do
       response(404, 'score not found') do
         let(:user) { create(:user) }
         let(:Authorization) { "Bearer mock-firebase-token" }
-        let(:id) { 99999 }
+        let(:id) { 'nonexistent-slug' }
         let(:score) do
           {
             score: {
@@ -762,7 +763,7 @@ RSpec.describe 'api/scores', type: :request do
           let(:user) { create(:user) }
           let(:Authorization) { "Bearer mock-firebase-token" }
           let(:existing_score) { create(:score, title: 'Test Song', key_name: 'C', user: user) }
-          let(:id) { existing_score.id }
+          let(:id) { existing_score.slug }
           let(:score) do
             {
               score: {
@@ -792,7 +793,7 @@ RSpec.describe 'api/scores', type: :request do
           let(:user) { create(:user) }
           let(:Authorization) { "Bearer mock-firebase-token" }
           let(:existing_score) { create(:score, title: 'Test Song', key_name: 'C', user: user) }
-          let(:id) { existing_score.id }
+          let(:id) { existing_score.slug }
           let(:score) do
             {
               score: {
@@ -822,7 +823,7 @@ RSpec.describe 'api/scores', type: :request do
           let(:user) { create(:user) }
           let(:Authorization) { "Bearer mock-firebase-token" }
           let(:existing_score) { create(:score, title: 'Test Song', key_name: 'C', user: user) }
-          let(:id) { existing_score.id }
+          let(:id) { existing_score.slug }
           let(:score) do
             {
               score: {
@@ -845,7 +846,7 @@ RSpec.describe 'api/scores', type: :request do
           let(:user) { create(:user) }
           let(:Authorization) { "Bearer mock-firebase-token" }
           let(:existing_score) { create(:score, title: 'Test Song', key_name: 'C', user: user) }
-          let(:id) { existing_score.id }
+          let(:id) { existing_score.slug }
           let(:score) do
             {
               score: {

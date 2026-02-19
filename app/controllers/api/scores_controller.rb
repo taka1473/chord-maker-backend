@@ -1,6 +1,6 @@
 class Api::ScoresController < ApplicationController
-  SCORE_LIST_FIELDS = [ :id, :title, :artist, :key, :key_name, :tempo, :time_signature, :lyrics, :created_at, :published ].freeze
-  SCORE_DETAIL_FIELDS = [ :id, :title, :artist, :key, :key_name, :tempo, :time_signature, :lyrics, :published ].freeze
+  SCORE_LIST_FIELDS = [ :id, :slug, :title, :artist, :key, :key_name, :tempo, :time_signature, :lyrics, :created_at, :published ].freeze
+  SCORE_DETAIL_FIELDS = [ :id, :slug, :title, :artist, :key, :key_name, :tempo, :time_signature, :lyrics, :published ].freeze
   PER_PAGE = 20
 
   before_action :authenticate!, only: [ :create, :upsert_whole_score, :destroy ]
@@ -70,7 +70,7 @@ class Api::ScoresController < ApplicationController
   private
 
   def set_score
-    @score = Score.includes(:tags, measures: :chords).find(params[:id])
+    @score = Score.includes(:tags, measures: :chords).find_by!(slug: params[:id])
   rescue ActiveRecord::RecordNotFound
     render json: { error: "Score not found" }, status: :not_found
   end
