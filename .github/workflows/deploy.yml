@@ -5,11 +5,11 @@ on:
     branches: [main]
 
 env:
-  GCP_PROJECT_ID: your-gcp-project-id       # TODO: 実際のプロジェクト ID に変更
-  GCP_REGION: asia-northeast1               # TODO: 必要に応じて変更
-  SERVICE_NAME: chord-maker-backend
-  REPOSITORY: chord-maker-backend            # Artifact Registry リポジトリ名
-  CLOUD_SQL_INSTANCE: your-gcp-project-id:asia-northeast1:chord-maker-db  # TODO: 実際のインスタンス接続名に変更
+  GCP_PROJECT_ID: chordmaker
+  GCP_REGION: asia-northeast1
+  SERVICE_NAME: chordmaker
+  REPOSITORY: chord-maker-backend
+  CLOUD_SQL_INSTANCE: chordmaker:asia-northeast1:chord-maker-db-prod
 
 jobs:
   deploy:
@@ -25,8 +25,8 @@ jobs:
         uses: google-github-actions/auth@v2
         with:
           # TODO: Workload Identity Federation の設定値に変更
-          workload_identity_provider: projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/POOL_ID/providers/PROVIDER_ID
-          service_account: SERVICE_ACCOUNT@PROJECT_ID.iam.gserviceaccount.com
+          workload_identity_provider: projects/368946096300/locations/global/workloadIdentityPools/github-actions/providers/github
+          service_account: github-actions@chordmaker.iam.gserviceaccount.com
 
       - uses: google-github-actions/setup-gcloud@v2
 
