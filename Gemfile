@@ -41,7 +41,7 @@ gem "thruster", require: false
 gem 'rswag-api'
 gem 'rswag-ui'
 gem 'rack-cors'
-gem 'jwt', '~> 2.9'
+gem 'jwt', '~> 3.1'
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
