@@ -1,6 +1,6 @@
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
-    origins Rails.application.credentials.cors_origins
+    origins(*Array(Rails.application.credentials.cors_origins).compact)
 
     resource "*",
       headers: :any,
