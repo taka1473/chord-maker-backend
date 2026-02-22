@@ -8,7 +8,7 @@ env:
   GCP_PROJECT_ID: chordmaker
   GCP_REGION: asia-northeast1
   SERVICE_NAME: chordmaker
-  REPOSITORY: chord-maker-backend
+  REPOSITORY: chord-maker-source-deploy
   CLOUD_SQL_INSTANCE: chordmaker:asia-northeast1:chord-maker-db-prod
 
 jobs:
