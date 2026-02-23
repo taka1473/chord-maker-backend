@@ -8,7 +8,13 @@ fi
 
 # If running the rails server then create or migrate existing database
 if [[ "${*}" == *"./bin/rails server"* ]]; then
-  ./bin/rails db:prepare
+  MAX_RETRIES=10
+  RETRY_INTERVAL=3
+  for i in $(seq 1 $MAX_RETRIES); do
+    ./bin/rails db:prepare && break
+    echo "db:prepare failed (attempt $i/$MAX_RETRIES), retrying in ${RETRY_INTERVAL}s..."
+    sleep $RETRY_INTERVAL
+  done
 fi
 
 exec "${@}"
