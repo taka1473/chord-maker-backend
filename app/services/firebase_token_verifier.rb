@@ -1,3 +1,5 @@
+require "net/http"
+
 class FirebaseTokenVerifier
   GOOGLE_CERTS_URL = "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com"
   ISSUER_PREFIX = "https://securetoken.google.com/"
