@@ -7,18 +7,33 @@ paths:
   "/api/scores":
     get:
       summary: list scores
+      parameters:
+      - name: search
+        in: query
+        required: false
+        description: Search by title or artist
+        schema:
+          type: string
+      - name: tags[]
+        in: query
+        items:
+          type: string
+        required: false
+        description: Filter by tag names (AND)
+        schema:
+          type: array
       responses:
         '200':
-          description: successful
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  "$ref": "#/components/schemas/Score"
+          description: filtered by tags
     post:
       summary: create score
-      parameters: []
+      parameters:
+      - name: Authorization
+        in: header
+        description: Firebase ID Token
+        required: true
+        schema:
+          type: string
       responses:
         '201':
           description: score created with minimal data
@@ -26,6 +41,8 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/Score"
+        '401':
+          description: unauthorized
         '422':
           description: validation errors
       requestBody:
@@ -45,19 +62,16 @@ paths:
                       type: integer
                     time_signature:
                       type: string
-                    user_id:
-                      type: integer
                     published:
                       type: boolean
                   required:
                   - title
                   - key_name
-                  - user_id
   "/api/scores/{id}/whole_score":
     parameters:
     - name: id
       in: path
-      description: id
+      description: slug
       required: true
       schema:
         type: string
@@ -76,13 +90,19 @@ paths:
     parameters:
     - name: id
       in: path
-      description: id of existing score
+      description: slug of existing score
       required: true
       schema:
         type: string
     patch:
       summary: upsert whole score
-      parameters: []
+      parameters:
+      - name: Authorization
+        in: header
+        description: Firebase ID Token
+        required: true
+        schema:
+          type: string
       responses:
         '200':
           description: upsert score with deleting measures and chords
@@ -150,8 +170,6 @@ paths:
                       type: integer
                     time_signature:
                       type: string
-                    user_id:
-                      type: integer
                     published:
                       type: boolean
                     measures_attributes:
@@ -269,14 +287,21 @@ components:
       enum:
       - major
       - minor
+      - '7'
+      - maj7
+      - min7
+      - min7-5
       - dim
+      - dim7
       - aug
       - sus2
       - sus4
       - add9
-      - maj7
-      - min7
-      - dim7
-      - aug7
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Firebase ID Token
 servers:
 - url: http://localhost:3000
