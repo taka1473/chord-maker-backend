@@ -36,13 +36,11 @@ paths:
           type: string
       responses:
         '201':
-          description: score created with minimal data
+          description: guest score created without auth
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/Score"
-        '401':
-          description: unauthorized
         '422':
           description: validation errors
       requestBody:
