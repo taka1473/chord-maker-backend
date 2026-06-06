@@ -25,20 +25,15 @@ test:
   database: chord_maker_test
 
 
-# Production database served by PostgreSQL accessory via Kamal.
-# DB_HOST is set in config/deploy.yml (defaults to "db" for docker compose).
 production:
   primary:
     <<: *default
-    host: <%= ENV.fetch("DB_HOST", "db") %>
-    database: chord_maker_production
+    url: <%= ENV["DATABASE_URL"] %>
   cache:
     <<: *default
-    host: <%= ENV.fetch("DB_HOST", "db") %>
-    database: chord_maker_production_cache
+    url: <%= ENV["DATABASE_CACHE_URL"] %>
     migrations_paths: db/cache_migrate
   queue:
     <<: *default
-    host: <%= ENV.fetch("DB_HOST", "db") %>
-    database: chord_maker_production_queue
+    url: <%= ENV["DATABASE_QUEUE_URL"] %>
     migrations_paths: db/queue_migrate
