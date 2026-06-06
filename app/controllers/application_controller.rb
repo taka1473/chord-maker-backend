@@ -31,6 +31,27 @@ class ApplicationController < ActionController::API
     end
   end
 
+  def authorize_score_owner_or_guest!
+    if @score.user_id.present?
+      unless @score.user_id == current_user&.id
+        render json: { error: "Forbidden" }, status: :forbidden
+        return
+      end
+    elsif valid_guest_token?
+      if @score.guest_expires_at&.past?
+        render json: { error: "This score has expired" }, status: :gone
+        return
+      end
+    else
+      render json: { error: "Forbidden" }, status: :forbidden
+    end
+  end
+
+  def valid_guest_token?
+    @score.guest_token.present? &&
+      ActiveSupport::SecurityUtils.secure_compare(@score.guest_token, params[:guest_token].to_s)
+  end
+
   def current_user
     @current_user
   end

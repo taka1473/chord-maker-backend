@@ -12,6 +12,7 @@ Rails.application.routes.draw do
       member do
         get :whole_score
         patch :upsert_whole_score
+        patch :claim
       end
     end
 

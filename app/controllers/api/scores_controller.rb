@@ -3,10 +3,11 @@ class Api::ScoresController < ApplicationController
   SCORE_DETAIL_FIELDS = [ :id, :slug, :title, :artist, :key, :key_name, :tempo, :time_signature, :lyrics, :published ].freeze
   PER_PAGE = 20
 
-  before_action :authenticate!, only: [ :create, :upsert_whole_score, :destroy ]
-  before_action :authenticate_if_present, only: [ :whole_score ]
-  before_action :set_score, only: [ :whole_score, :upsert_whole_score, :destroy ]
-  before_action :authorize_score_owner!, only: [ :upsert_whole_score, :destroy ]
+  before_action :authenticate_if_present, only: [ :create, :whole_score, :upsert_whole_score ]
+  before_action :authenticate!, only: [ :destroy, :claim ]
+  before_action :set_score, only: [ :whole_score, :upsert_whole_score, :destroy, :claim ]
+  before_action :authorize_score_owner_or_guest!, only: [ :upsert_whole_score ]
+  before_action :authorize_score_owner!, only: [ :destroy ]
 
   def index
     direction = params[:sort] == "oldest" ? :asc : :desc
@@ -29,16 +30,23 @@ class Api::ScoresController < ApplicationController
   def create
     score = Score.new(score_params.merge(user: current_user))
     if score.save
-      render json: score,
-        only: SCORE_LIST_FIELDS, methods: [ :tag_names ],
-        status: :created
+      json = score.as_json(only: SCORE_LIST_FIELDS, methods: [ :tag_names ])
+      json["guest_token"] = score.guest_token if score.guest?
+      render json: json, status: :created
     else
       render json: { errors: score.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
   def whole_score
-    unless @score.published? || @score.user_id == current_user&.id
+    if @score.published? || @score.user_id == current_user&.id
+      # public or owner: unrestricted
+    elsif valid_guest_token?
+      if @score.guest_expires_at&.past?
+        render json: { error: "This score has expired" }, status: :gone
+        return
+      end
+    else
       render json: { error: "Score not found" }, status: :not_found
       return
     end
@@ -65,6 +73,26 @@ class Api::ScoresController < ApplicationController
   def destroy
     @score.destroy!
     head :no_content
+  end
+
+  def claim
+    unless @score.guest?
+      render json: { error: "Score already has an owner" }, status: :unprocessable_entity
+      return
+    end
+
+    unless valid_guest_token?
+      render json: { error: "Invalid or missing token" }, status: :forbidden
+      return
+    end
+
+    if @score.guest_expires_at&.past?
+      render json: { error: "This score has expired" }, status: :gone
+      return
+    end
+
+    @score.update!(user: current_user, guest_token: nil, guest_expires_at: nil)
+    render json: @score.as_json(only: SCORE_LIST_FIELDS, methods: [ :tag_names ]), status: :ok
   end
 
   private
