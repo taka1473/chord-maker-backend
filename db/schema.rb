@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_18_140832) do
+ActiveRecord::Schema[8.0].define(version: 2026_06_06_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -47,7 +47,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_18_140832) do
 
   create_table "scores", force: :cascade do |t|
     t.string "title", null: false
-    t.bigint "user_id", null: false
+    t.bigint "user_id"
     t.boolean "published", default: false
     t.integer "tempo"
     t.integer "key", null: false, comment: "0: A, 1: A#..."
@@ -58,6 +58,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_18_140832) do
     t.string "key_name", null: false, comment: "distinguishing A# from Bb"
     t.string "artist"
     t.string "slug", null: false
+    t.string "guest_token"
+    t.datetime "guest_expires_at"
+    t.index ["guest_token"], name: "index_scores_on_guest_token", unique: true
     t.index ["slug"], name: "index_scores_on_slug", unique: true
     t.index ["user_id"], name: "index_scores_on_user_id"
   end

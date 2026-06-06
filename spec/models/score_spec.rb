@@ -4,6 +4,8 @@
 #
 #  id                                  :bigint           not null, primary key
 #  artist                              :string
+#  guest_expires_at                    :datetime
+#  guest_token                         :string
 #  key(0: A, 1: A#...)                 :integer          not null
 #  key_name(distinguishing A# from Bb) :string           not null
 #  lyrics                              :text
@@ -14,12 +16,13 @@
 #  title                               :string           not null
 #  created_at                          :datetime         not null
 #  updated_at                          :datetime         not null
-#  user_id                             :bigint           not null
+#  user_id                             :bigint
 #
 # Indexes
 #
-#  index_scores_on_slug     (slug) UNIQUE
-#  index_scores_on_user_id  (user_id)
+#  index_scores_on_guest_token  (guest_token) UNIQUE
+#  index_scores_on_slug         (slug) UNIQUE
+#  index_scores_on_user_id      (user_id)
 #
 # Foreign Keys
 #

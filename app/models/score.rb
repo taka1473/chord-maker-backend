@@ -4,6 +4,8 @@
 #
 #  id                                  :bigint           not null, primary key
 #  artist                              :string
+#  guest_expires_at                    :datetime
+#  guest_token                         :string
 #  key(0: A, 1: A#...)                 :integer          not null
 #  key_name(distinguishing A# from Bb) :string           not null
 #  lyrics                              :text
@@ -14,12 +16,13 @@
 #  title                               :string           not null
 #  created_at                          :datetime         not null
 #  updated_at                          :datetime         not null
-#  user_id                             :bigint           not null
+#  user_id                             :bigint
 #
 # Indexes
 #
-#  index_scores_on_slug     (slug) UNIQUE
-#  index_scores_on_user_id  (user_id)
+#  index_scores_on_guest_token  (guest_token) UNIQUE
+#  index_scores_on_slug         (slug) UNIQUE
+#  index_scores_on_user_id      (user_id)
 #
 # Foreign Keys
 #
@@ -46,25 +49,33 @@ class Score < ApplicationRecord
     'Ab' => 11,
   }
 
-  belongs_to :user
+  belongs_to :user, optional: true
   has_many :measures, dependent: :destroy
   has_many :chords, through: :measures
   has_many :score_tags, dependent: :destroy
   has_many :tags, through: :score_tags
-  
+
   validates :title, presence: true, length: { minimum: 1, maximum: 100 }
   validates :slug, presence: true, uniqueness: true
   validates :key, presence: true, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 11 }
   validates :key_name, presence: true, inclusion: { in: KEY_MAP.keys }
   validates :tempo, numericality: { greater_than: 0, less_than: 500 }, allow_blank: true
+  validate :user_or_guest_token_present
 
   before_validation :set_key
   before_validation :generate_slug, on: :create
+  before_validation :generate_guest_token, on: :create, if: -> { user.nil? }
+  before_validation :set_guest_expires_at, on: :create, if: -> { user.nil? }
 
   accepts_nested_attributes_for :measures, allow_destroy: true
   accepts_nested_attributes_for :chords, allow_destroy: true
   
   scope :published, -> { where(published: true) }
+  scope :expired_guests, -> { where(user_id: nil).where("guest_expires_at < ?", Time.current) }
+
+  def guest?
+    user_id.nil?
+  end
   scope :search, ->(query) {
     where("title ILIKE :q OR artist ILIKE :q", q: "%#{query}%")
   }
@@ -106,5 +117,24 @@ class Score < ApplicationRecord
     return if KEY_MAP[key_name] == key
 
     errors.add(:key, "does not match the key name")
+  end
+
+  def user_or_guest_token_present
+    return if user_id.present? || guest_token.present?
+
+    errors.add(:base, "must have a user or a guest token")
+  end
+
+  def generate_guest_token
+    return if guest_token.present?
+
+    loop do
+      self.guest_token = SecureRandom.urlsafe_base64(32)
+      break unless Score.exists?(guest_token: guest_token)
+    end
+  end
+
+  def set_guest_expires_at
+    self.guest_expires_at ||= 30.days.from_now
   end
 end
