@@ -256,22 +256,25 @@ RSpec.describe 'api/scores', type: :request do
         end
       end
 
-      response(401, 'unauthorized') do
-        context 'when Authorization header is missing' do
-          let(:Authorization) { nil }
-          let(:score) do
-            {
-              score: {
-                title: 'Test Song',
-                key_name: 'C'
-              }
+      response(201, 'guest score created without auth') do
+        let(:Authorization) { nil }
+        let(:score) do
+          {
+            score: {
+              title: 'Test Song',
+              key_name: 'C'
             }
-          end
+          }
+        end
 
-          run_test! do |response|
-            data = JSON.parse(response.body)
-            expect(data['error']).to include("Authorization header is required")
-          end
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data['title']).to eq('Test Song')
+          expect(data['guest_token']).to be_present
+          created_score = Score.find(data['id'])
+          expect(created_score.user_id).to be_nil
+          expect(created_score.guest_token).to be_present
+          expect(created_score.guest_expires_at).to be_present
         end
       end
 
