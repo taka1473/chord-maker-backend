@@ -76,6 +76,10 @@ class Score < ApplicationRecord
   def guest?
     user_id.nil?
   end
+
+  def guest_expired?
+    guest_expires_at.nil? || guest_expires_at.past?
+  end
   scope :search, ->(query) {
     where("title ILIKE :q OR artist ILIKE :q", q: "%#{query}%")
   }

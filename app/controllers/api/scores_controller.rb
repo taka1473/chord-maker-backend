@@ -42,7 +42,7 @@ class Api::ScoresController < ApplicationController
     if @score.published? || (current_user && @score.user_id == current_user.id)
       # public or owner: unrestricted
     elsif valid_guest_token?
-      if @score.guest_expires_at.nil? || @score.guest_expires_at.past?
+      if @score.guest_expired?
         render json: { error: "This score has expired" }, status: :gone
         return
       end
@@ -87,7 +87,7 @@ class Api::ScoresController < ApplicationController
         return
       end
 
-      if @score.guest_expires_at.nil? || @score.guest_expires_at.past?
+      if @score.guest_expired?
         render json: { error: "This score has expired" }, status: :gone
         return
       end
