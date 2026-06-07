@@ -39,10 +39,10 @@ class Api::ScoresController < ApplicationController
   end
 
   def whole_score
-    if @score.published? || @score.user_id == current_user&.id
+    if @score.published? || (current_user && @score.user_id == current_user.id)
       # public or owner: unrestricted
     elsif valid_guest_token?
-      if @score.guest_expires_at&.past?
+      if @score.guest_expires_at.nil? || @score.guest_expires_at.past?
         render json: { error: "This score has expired" }, status: :gone
         return
       end
@@ -76,23 +76,25 @@ class Api::ScoresController < ApplicationController
   end
 
   def claim
-    unless @score.guest?
-      render json: { error: "Score already has an owner" }, status: :unprocessable_entity
-      return
-    end
-
     unless valid_guest_token?
       render json: { error: "Invalid or missing token" }, status: :forbidden
       return
     end
 
-    if @score.guest_expires_at&.past?
-      render json: { error: "This score has expired" }, status: :gone
-      return
-    end
+    @score.with_lock do
+      if @score.user_id.present?
+        render json: { error: "Score already has an owner" }, status: :unprocessable_entity
+        return
+      end
 
-    @score.update!(user: current_user, guest_token: nil, guest_expires_at: nil)
-    render json: @score.as_json(only: SCORE_LIST_FIELDS, methods: [ :tag_names ]), status: :ok
+      if @score.guest_expires_at.nil? || @score.guest_expires_at.past?
+        render json: { error: "This score has expired" }, status: :gone
+        return
+      end
+
+      @score.update!(user: current_user, guest_token: nil, guest_expires_at: nil)
+      render json: @score.as_json(only: SCORE_LIST_FIELDS, methods: [ :tag_names ]), status: :ok
+    end
   end
 
   private

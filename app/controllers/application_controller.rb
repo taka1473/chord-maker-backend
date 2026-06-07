@@ -26,7 +26,7 @@ class ApplicationController < ActionController::API
   end
 
   def authorize_score_owner!
-    unless @score.user_id == current_user&.id
+    unless current_user && @score.user_id == current_user.id
       render json: { error: "Forbidden" }, status: :forbidden
     end
   end
