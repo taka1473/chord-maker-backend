@@ -1,0 +1,60 @@
+name: Bug Report
+description: APIの不具合を報告する
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        バグ報告ありがとうございます。再現に必要な情報をできるだけ詳しく記入してください。
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: 環境
+      options:
+        - Production
+        - Development (Docker)
+    validations:
+      required: true
+
+  - type: textarea
+    id: endpoint
+    attributes:
+      label: 対象エンドポイント
+      description: 問題が発生したAPIエンドポイントとHTTPメソッド
+      placeholder: "例: PATCH /api/scores/:id/upsert_whole_score"
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 再現手順
+      description: バグを再現するための手順を順番に記載してください
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期待する動作
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: 実際の動作
+      description: エラーレスポンスやログがあれば貼り付けてください
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: 補足情報
+      description: 関連するログ、スタックトレース、スクリーンショットなど
