@@ -21,6 +21,10 @@ class Api::Admin::UsersController < Api::Admin::BaseController
 
   def destroy
     user = User.find(params[:id])
+    if user.id == current_user.id
+      render json: { error: "Cannot delete your own account" }, status: :forbidden
+      return
+    end
     user.destroy!
     head :no_content
   rescue ActiveRecord::RecordNotFound

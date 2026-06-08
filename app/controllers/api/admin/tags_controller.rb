@@ -5,7 +5,7 @@ class Api::Admin::TagsController < Api::Admin::BaseController
     tags = Tag.left_joins(:scores)
                .select("tags.*, COUNT(scores.id) AS scores_count")
                .group("tags.id")
-               .order(created_at: :desc)
+               .order("tags.created_at DESC")
 
     total_count = Tag.count
     page = [ params[:page].to_i, 1 ].max
