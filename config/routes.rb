@@ -24,6 +24,7 @@ Rails.application.routes.draw do
       resources :users, only: [ :index, :destroy ]
       resources :scores, only: [ :index, :destroy ] do
         member { patch :unpublish }
+        collection { post :import }
       end
       resources :tags, only: [ :index, :destroy ]
     end
