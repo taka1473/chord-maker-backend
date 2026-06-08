@@ -4,6 +4,178 @@ info:
   title: API V1
   version: v1
 paths:
+  "/api/admin/scores":
+    get:
+      summary: list all scores
+      tags:
+      - Admin
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: successful
+        '403':
+          description: forbidden (non-admin)
+  "/api/admin/scores/{id}/unpublish":
+    patch:
+      summary: unpublish score
+      tags:
+      - Admin
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        '204':
+          description: no content
+        '403':
+          description: forbidden (non-admin)
+        '404':
+          description: not found
+  "/api/admin/scores/{id}":
+    delete:
+      summary: delete score
+      tags:
+      - Admin
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        '204':
+          description: no content
+        '403':
+          description: forbidden (non-admin)
+        '404':
+          description: not found
+  "/api/admin/tags":
+    get:
+      summary: list tags
+      tags:
+      - Admin
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: successful
+        '403':
+          description: forbidden (non-admin)
+  "/api/admin/tags/{id}":
+    delete:
+      summary: delete tag
+      tags:
+      - Admin
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        '204':
+          description: no content
+        '403':
+          description: forbidden (non-admin)
+        '404':
+          description: not found
+  "/api/admin/users":
+    get:
+      summary: list users
+      tags:
+      - Admin
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        description: Firebase ID Token
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: successful
+        '401':
+          description: unauthorized
+        '403':
+          description: forbidden (non-admin)
+  "/api/admin/users/{id}":
+    delete:
+      summary: delete user
+      tags:
+      - Admin
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        '204':
+          description: no content
+        '403':
+          description: forbidden (non-admin)
+        '404':
+          description: not found
   "/api/scores":
     get:
       summary: list scores
