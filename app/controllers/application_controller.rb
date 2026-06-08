@@ -41,12 +41,12 @@ class ApplicationController < ActionController::API
     if @score.user_id.present?
       unless current_user && @score.user_id == current_user.id
         render json: { error: "Forbidden" }, status: :forbidden
-        return
+        nil
       end
     elsif valid_guest_token?
       if @score.guest_expired?
         render json: { error: "This score has expired" }, status: :gone
-        return
+        nil
       end
     else
       render json: { error: "Forbidden" }, status: :forbidden

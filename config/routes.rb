@@ -1,6 +1,6 @@
 Rails.application.routes.draw do
-  mount Rswag::Ui::Engine => '/api-docs'
-  mount Rswag::Api::Engine => '/api-docs'
+  mount Rswag::Ui::Engine => "/api-docs"
+  mount Rswag::Api::Engine => "/api-docs"
 
   root "scores#index"
 
@@ -8,7 +8,7 @@ Rails.application.routes.draw do
     get "users/me", to: "users#me"
     patch "users/me", to: "users#update_me"
 
-    resources :scores, only: [:index, :create, :destroy] do
+    resources :scores, only: [ :index, :create, :destroy ] do
       member do
         get :whole_score
         patch :upsert_whole_score
@@ -17,7 +17,15 @@ Rails.application.routes.draw do
     end
 
     namespace :me do
-      resources :scores, only: [:index]
+      resources :scores, only: [ :index ]
+    end
+
+    namespace :admin do
+      resources :users, only: [ :index, :destroy ]
+      resources :scores, only: [ :index, :destroy ] do
+        member { patch :unpublish }
+      end
+      resources :tags, only: [ :index, :destroy ]
     end
   end
 end
