@@ -25,6 +25,12 @@ class ApplicationController < ActionController::API
     @current_user = find_or_create_user(payload)
   end
 
+  def authenticate_admin!
+    authenticate!
+    return if performed?
+    render json: { error: "Forbidden" }, status: :forbidden unless current_user&.admin?
+  end
+
   def authorize_score_owner!
     unless current_user && @score.user_id == current_user.id
       render json: { error: "Forbidden" }, status: :forbidden

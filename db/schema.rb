@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_06_06_100000) do
+ActiveRecord::Schema[8.0].define(version: 2026_06_08_143754) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -77,7 +77,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_06_06_100000) do
     t.string "account_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "role", default: 0, null: false
     t.index ["account_id"], name: "index_users_on_account_id", unique: true
+    t.index ["role"], name: "index_users_on_role"
   end
 
   add_foreign_key "chords", "measures"
