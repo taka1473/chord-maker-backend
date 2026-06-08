@@ -18,5 +18,9 @@ FactoryBot.define do
   factory :user do
     sequence(:name) { |n| "User #{n}" }
     sequence(:account_id) { |n| "user_#{n}" }
+
+    trait :admin do
+      role { :admin }
+    end
   end
 end 
