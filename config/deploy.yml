@@ -17,7 +17,7 @@ proxy:
   ssl: true
   host: api.chord-let.com
   healthcheck:
-    path: /api/scores
+    path: /up
 
 # Credentials for your image host (GitHub Container Registry).
 registry:
