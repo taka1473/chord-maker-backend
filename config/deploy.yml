@@ -9,7 +9,7 @@ image: ghcr.io/taka1473/chordlet-backend
 servers:
   web:
     # TODO: Compute Engine の外部 IP アドレスに変更
-    - 136.113.130.49
+    - 136.113.210.132
 
 # Enable SSL auto certification via Let's Encrypt.
 # TODO: 取得したドメインに変更
