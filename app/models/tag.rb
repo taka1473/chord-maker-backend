@@ -15,5 +15,5 @@ class Tag < ApplicationRecord
   has_many :score_tags, dependent: :destroy
   has_many :scores, through: :score_tags
 
-  validates :name, presence: true, uniqueness: { case_sensitive: false }, length: { maximum: 30 }
+  validates :name, presence: true, uniqueness: true, length: { maximum: 30 }
 end
