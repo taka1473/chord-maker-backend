@@ -22,11 +22,10 @@ jobs:
       - name: Set up SSH
         run: |
           mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          # config/deploy.yml からサーバー IP を抽出して known_hosts に登録
-          SERVER_IP=$(grep -A3 'web:' config/deploy.yml | grep -E '^\s+- [0-9]' | tr -d ' -')
-          ssh-keyscan -H "$SERVER_IP" >> ~/.ssh/known_hosts
+          echo "StrictHostKeyChecking=no" > ~/.ssh/config
 
       - name: Deploy with Kamal
         run: bin/kamal deploy
