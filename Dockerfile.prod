@@ -2,21 +2,16 @@
 # check=error=true
 
 # This Dockerfile is designed for production, not development.
-# docker build -f Dockerfile.prod -t chord_maker_backend .
-# docker run -d -p 8080:8080 -e RAILS_MASTER_KEY=<value from config/master.key> --name chord_maker_backend chord_maker_backend
+# docker build -f Dockerfile.prod -t chordlet_backend .
 
-# For a containerized dev environment, see Dev Containers: https://guides.rubyonrails.org/getting_started_with_devcontainer.html
-
-# Make sure RUBY_VERSION matches the Ruby version in .ruby-version
 ARG RUBY_VERSION=3.4.4
 FROM docker.io/library/ruby:$RUBY_VERSION-slim AS base
 
-# Rails app lives here
 WORKDIR /rails
 
 # Install base packages
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y curl libjemalloc2 libvips libpq5 && \
+    apt-get install --no-install-recommends -y curl libjemalloc2 libvips libsqlite3-0 && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Set production environment
@@ -30,7 +25,7 @@ FROM base AS build
 
 # Install packages needed to build gems
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential git libyaml-dev libpq-dev pkg-config && \
+    apt-get install --no-install-recommends -y build-essential git libyaml-dev libsqlite3-dev pkg-config && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Install application gems
@@ -49,14 +44,20 @@ RUN bundle exec bootsnap precompile app/ lib/
 RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
 
 
-
-
 # Final stage for app image
 FROM base
+
+# Install Litestream for SQLite replication to GCS
+ARG LITESTREAM_VERSION=0.3.13
+RUN curl -fsSL https://github.com/benbjohnson/litestream/releases/download/v${LITESTREAM_VERSION}/litestream-v${LITESTREAM_VERSION}-linux-amd64.tar.gz \
+    | tar -C /usr/local/bin -xz litestream
 
 # Copy built artifacts: gems, application
 COPY --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
 COPY --from=build /rails /rails
+
+# Copy Litestream config to standard location
+COPY config/litestream.yml /etc/litestream.yml
 
 # Run and own only the runtime files as a non-root user for security
 RUN groupadd --system --gid 1000 rails && \
@@ -64,10 +65,4 @@ RUN groupadd --system --gid 1000 rails && \
     chown -R rails:rails db log storage tmp
 USER 1000:1000
 
-# Entrypoint prepares the database.
-ENTRYPOINT ["/rails/bin/docker-entrypoint"]
-
-# Cloud Run sets PORT env var (default 8080). Thruster uses HTTP_PORT for its listen port.
-ENV PORT=8080
-EXPOSE 8080
-CMD ["sh", "-c", "HTTP_PORT=$PORT exec ./bin/thrust ./bin/rails server"]
+ENTRYPOINT ["/rails/bin/litestream-start"]
