@@ -1,0 +1,17 @@
+#!/bin/bash -e
+
+if [ -z "${LD_PRELOAD+x}" ]; then
+    LD_PRELOAD=$(find /usr/lib -name libjemalloc.so.2 -print -quit)
+    export LD_PRELOAD
+fi
+
+# Restore databases from GCS backup on first deploy or after disaster recovery
+litestream restore -if-replica-exists /rails/storage/production.sqlite3
+litestream restore -if-replica-exists /rails/storage/production_cache.sqlite3
+litestream restore -if-replica-exists /rails/storage/production_queue.sqlite3
+
+# Create or migrate databases
+./bin/rails db:prepare
+
+# Start Rails server under Litestream continuous replication
+exec litestream replicate -exec "./bin/thrust ./bin/rails server"
