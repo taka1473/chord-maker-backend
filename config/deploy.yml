@@ -49,6 +49,9 @@ volumes:
 # Bridge fingerprinted assets between versions.
 asset_path: /rails/public/assets
 
+ssh:
+  user: github-actions
+
 # Configure the image builder.
 builder:
   arch: amd64
