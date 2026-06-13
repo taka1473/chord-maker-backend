@@ -1,58 +1,36 @@
-name: Deploy to Cloud Run
+name: Deploy to Compute Engine via Kamal
 
 on:
   push:
     branches: [main]
-
-env:
-  GCP_PROJECT_ID: chordmaker
-  GCP_REGION: asia-northeast1
-  SERVICE_NAME: chordmaker
-  REPOSITORY: chord-maker-source-deploy
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write
+      packages: write  # for pushing to ghcr.io
 
     steps:
       - uses: actions/checkout@v4
 
-      - id: auth
-        uses: google-github-actions/auth@v2
+      - uses: ruby/setup-ruby@v1
         with:
-          # TODO: Workload Identity Federation の設定値に変更
-          workload_identity_provider: projects/368946096300/locations/global/workloadIdentityPools/github-actions/providers/github
-          service_account: github-actions@chordmaker.iam.gserviceaccount.com
+          ruby-version: .ruby-version
+          bundler-cache: true
 
-      - uses: google-github-actions/setup-gcloud@v2
-
-      - name: Configure Docker for Artifact Registry
-        run: gcloud auth configure-docker ${GCP_REGION}-docker.pkg.dev
-
-      - name: Build and push Docker image
+      - name: Set up SSH
         run: |
-          IMAGE=${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${REPOSITORY}/${SERVICE_NAME}:${GITHUB_SHA::7}
-          docker build -f Dockerfile.prod -t $IMAGE .
-          docker push $IMAGE
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          # TODO: YOUR_SERVER_IP を実際のサーバー IP に変更するか、secrets.SERVER_IP を使う
+          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
 
-      # NOTE: SolidQueue を有効化する際は以下2点を対応すること:
-      #   1. --set-env-vars に SOLID_QUEUE_IN_PUMA=true を追加
-      #   2. --no-cpu-throttling を追加（リクエスト外でもCPUを割り当て、ジョブポーリングを維持するため）
-      - name: Deploy to Cloud Run
-        run: |
-          IMAGE=${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${REPOSITORY}/${SERVICE_NAME}:${GITHUB_SHA::7}
-          gcloud run deploy $SERVICE_NAME \
-            --image $IMAGE \
-            --region $GCP_REGION \
-            --platform managed \
-            --allow-unauthenticated \
-            --set-env-vars "RAILS_ENV=production,RAILS_LOG_LEVEL=info" \
-            --set-secrets "RAILS_MASTER_KEY=RAILS_MASTER_KEY:latest,DATABASE_URL=DATABASE_URL:latest,DATABASE_CACHE_URL=DATABASE_CACHE_URL:latest,DATABASE_QUEUE_URL=DATABASE_QUEUE_URL:latest" \
-            --min-instances 0 \
-            --max-instances 4 \
-            --memory 1Gi \
-            --cpu 1 \
-            --timeout 60
+      - name: Deploy with Kamal
+        run: bin/kamal deploy
+        env:
+          KAMAL_REGISTRY_USERNAME: ${{ github.actor }}
+          KAMAL_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
+          LITESTREAM_GCS_BUCKET: ${{ secrets.LITESTREAM_GCS_BUCKET }}
