@@ -15,7 +15,9 @@ servers:
 # TODO: 取得したドメインに変更
 proxy:
   ssl: true
-  host: chord-let.com
+  host: api.chord-let.com
+  healthcheck:
+    path: /api/scores
 
 # Credentials for your image host (GitHub Container Registry).
 registry:
