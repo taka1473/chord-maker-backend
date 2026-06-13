@@ -27,6 +27,9 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           echo "StrictHostKeyChecking=no" > ~/.ssh/config
 
+      - name: Bootstrap server (install Docker if needed)
+        run: bin/kamal server bootstrap
+
       - name: Deploy with Kamal
         run: bin/kamal deploy
         env:
