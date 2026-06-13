@@ -24,8 +24,9 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          # TODO: YOUR_SERVER_IP を実際のサーバー IP に変更するか、secrets.SERVER_IP を使う
-          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+          # config/deploy.yml からサーバー IP を抽出して known_hosts に登録
+          SERVER_IP=$(grep -A3 'web:' config/deploy.yml | grep -E '^\s+- [0-9]' | tr -d ' -')
+          ssh-keyscan -H "$SERVER_IP" >> ~/.ssh/known_hosts
 
       - name: Deploy with Kamal
         run: bin/kamal deploy
