@@ -228,6 +228,11 @@ paths:
                       type: string
                     key_name:
                       type: string
+                    key_mode:
+                      type: string
+                      enum:
+                      - major
+                      - minor
                     tempo:
                       type: integer
                     time_signature:
@@ -237,6 +242,7 @@ paths:
                   required:
                   - title
                   - key_name
+                  - key_mode
   "/api/scores/{id}/whole_score":
     parameters:
     - name: id
@@ -289,6 +295,8 @@ paths:
                     type: integer
                   key_name:
                     type: string
+                  key_mode:
+                    type: string
                   tempo:
                     type: integer
                     nullable: true
@@ -336,6 +344,11 @@ paths:
                       type: string
                     key_name:
                       type: string
+                    key_mode:
+                      type: string
+                      enum:
+                      - major
+                      - minor
                     tempo:
                       type: integer
                     time_signature:

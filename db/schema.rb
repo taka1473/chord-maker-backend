@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_06_08_143754) do
+ActiveRecord::Schema[8.0].define(version: 2026_06_20_122022) do
   create_table "chords", force: :cascade do |t|
     t.bigint "measure_id", null: false
     t.integer "position", null: false
@@ -47,16 +47,17 @@ ActiveRecord::Schema[8.0].define(version: 2026_06_08_143754) do
     t.bigint "user_id"
     t.boolean "published", default: false
     t.integer "tempo"
-    t.integer "key", null: false, comment: "0: A, 1: A#..."
+    t.integer "key", null: false
     t.string "time_signature"
     t.text "lyrics"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "key_name", null: false, comment: "distinguishing A# from Bb"
+    t.string "key_name", null: false
     t.string "artist"
     t.string "slug", null: false
     t.string "guest_token"
     t.datetime "guest_expires_at"
+    t.string "key_mode", default: "major", null: false
     t.index ["guest_token"], name: "index_scores_on_guest_token", unique: true
     t.index ["slug"], name: "index_scores_on_slug", unique: true
     t.index ["user_id"], name: "index_scores_on_user_id"

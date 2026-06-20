@@ -2,21 +2,22 @@
 #
 # Table name: scores
 #
-#  id                                  :bigint           not null, primary key
-#  artist                              :string
-#  guest_expires_at                    :datetime
-#  guest_token                         :string
-#  key(0: A, 1: A#...)                 :integer          not null
-#  key_name(distinguishing A# from Bb) :string           not null
-#  lyrics                              :text
-#  published                           :boolean          default(FALSE)
-#  slug                                :string           not null
-#  tempo                               :integer
-#  time_signature                      :string
-#  title                               :string           not null
-#  created_at                          :datetime         not null
-#  updated_at                          :datetime         not null
-#  user_id                             :bigint
+#  id               :integer          not null, primary key
+#  artist           :string
+#  guest_expires_at :datetime
+#  guest_token      :string
+#  key              :integer          not null
+#  key_mode         :string           default("major"), not null
+#  key_name         :string           not null
+#  lyrics           :text
+#  published        :boolean          default(FALSE)
+#  slug             :string           not null
+#  tempo            :integer
+#  time_signature   :string
+#  title            :string           not null
+#  created_at       :datetime         not null
+#  updated_at       :datetime         not null
+#  user_id          :bigint
 #
 # Indexes
 #
@@ -26,7 +27,7 @@
 #
 # Foreign Keys
 #
-#  fk_rails_...  (user_id => users.id)
+#  user_id  (user_id => users.id)
 #
 require 'rails_helper'
 

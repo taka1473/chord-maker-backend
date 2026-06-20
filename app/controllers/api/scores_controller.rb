@@ -1,6 +1,6 @@
 class Api::ScoresController < ApplicationController
-  SCORE_LIST_FIELDS = [ :id, :slug, :title, :artist, :key, :key_name, :tempo, :time_signature, :lyrics, :created_at, :published ].freeze
-  SCORE_DETAIL_FIELDS = [ :id, :slug, :title, :artist, :key, :key_name, :tempo, :time_signature, :lyrics, :published ].freeze
+  SCORE_LIST_FIELDS = [ :id, :slug, :title, :artist, :key, :key_name, :key_mode, :tempo, :time_signature, :lyrics, :created_at, :published ].freeze
+  SCORE_DETAIL_FIELDS = [ :id, :slug, :title, :artist, :key, :key_name, :key_mode, :tempo, :time_signature, :lyrics, :published ].freeze
   PER_PAGE = 20
 
   before_action :authenticate_if_present, only: [ :create, :whole_score, :upsert_whole_score ]
@@ -106,10 +106,10 @@ class Api::ScoresController < ApplicationController
   end
 
   def score_params
-    params.require(:score).permit(:title, :artist, :key_name, :tempo, :time_signature, :published, tag_names: [])
+    params.require(:score).permit(:title, :artist, :key_name, :key_mode, :tempo, :time_signature, :published, tag_names: [])
   end
 
   def whole_score_params
-    params.require(:score).permit(:title, :artist, :key_name, :tempo, :time_signature, :published, tag_names: [], measures_attributes: [:id, :position, :key_name, :_destroy, chords_attributes: [:id, :root_offset, :bass_offset, :chord_type, :position, :_destroy]])
+    params.require(:score).permit(:title, :artist, :key_name, :key_mode, :tempo, :time_signature, :published, tag_names: [], measures_attributes: [:id, :position, :key_name, :_destroy, chords_attributes: [:id, :root_offset, :bass_offset, :chord_type, :position, :_destroy]])
   end
 end

@@ -2,9 +2,9 @@
 #
 # Table name: users
 #
-#  id         :bigint           not null, primary key
+#  id         :integer          not null, primary key
 #  name       :string           not null
-#  role       :integer          default(0), not null
+#  role       :integer          default("user"), not null
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
 #  account_id :string           not null

@@ -2,7 +2,7 @@
 #
 # Table name: chords
 #
-#  id          :bigint           not null, primary key
+#  id          :integer          not null, primary key
 #  bass_offset :integer          not null
 #  chord_type  :string           default("0"), not null
 #  position    :integer          not null
@@ -17,7 +17,7 @@
 #
 # Foreign Keys
 #
-#  fk_rails_...  (measure_id => measures.id)
+#  measure_id  (measure_id => measures.id)
 #
 class Chord < ApplicationRecord
   CHORD_TYPES = %w[

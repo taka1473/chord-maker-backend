@@ -182,11 +182,12 @@ RSpec.describe 'api/scores', type: :request do
             properties: {
               title: { type: :string },
               key_name: { type: :string },
+              key_mode: { type: :string, enum: ['major', 'minor'] },
               tempo: { type: :integer },
               time_signature: { type: :string },
               published: { type: :boolean }
             },
-            required: ['title', 'key_name']
+            required: ['title', 'key_name', 'key_mode']
           }
         }
       }
@@ -201,6 +202,7 @@ RSpec.describe 'api/scores', type: :request do
             score: {
               title: 'New Test Song',
               key_name: 'C',
+              key_mode: 'major',
               tempo: 140,
               time_signature: '3/4',
               published: false
@@ -216,6 +218,7 @@ RSpec.describe 'api/scores', type: :request do
           expect(data['title']).to eq('New Test Song')
           expect(data['key']).to eq(3) # C maps to 3, automatically set by set_key callback
           expect(data['key_name']).to eq('C')
+          expect(data['key_mode']).to eq('major')
           expect(data['tempo']).to eq(140)
           expect(data['time_signature']).to eq('3/4')
           expect(data['id']).to be_present
@@ -237,7 +240,8 @@ RSpec.describe 'api/scores', type: :request do
           {
             score: {
               title: 'Minimal Song',
-              key_name: 'C'
+              key_name: 'C',
+              key_mode: 'minor'
             }
           }
         end
@@ -250,6 +254,7 @@ RSpec.describe 'api/scores', type: :request do
           expect(data['title']).to eq('Minimal Song')
           expect(data['key']).to eq(3) # C maps to 3, automatically set by set_key callback
           expect(data['key_name']).to eq('C')
+          expect(data['key_mode']).to eq('minor')
           expect(data['tempo']).to be_nil
           expect(data['time_signature']).to be_nil
           expect(data['id']).to be_present
@@ -262,7 +267,8 @@ RSpec.describe 'api/scores', type: :request do
           {
             score: {
               title: 'Test Song',
-              key_name: 'C'
+              key_name: 'C',
+              key_mode: 'major'
             }
           }
         end
@@ -285,7 +291,8 @@ RSpec.describe 'api/scores', type: :request do
           let(:score) do
             {
               score: {
-                key_name: 'C'
+                key_name: 'C',
+                key_mode: 'major'
               }
             }
           end
@@ -304,7 +311,8 @@ RSpec.describe 'api/scores', type: :request do
           let(:score) do
             {
               score: {
-                title: 'Test Song'
+                title: 'Test Song',
+                key_mode: 'major'
               }
             }
           end
@@ -324,7 +332,8 @@ RSpec.describe 'api/scores', type: :request do
             {
               score: {
                 title: 'Test Song',
-                key_name: 'InvalidKey'
+                key_name: 'InvalidKey',
+                key_mode: 'major'
               }
             }
           end
@@ -337,6 +346,27 @@ RSpec.describe 'api/scores', type: :request do
           end
         end
 
+        context 'when key_mode is invalid' do
+          let(:user) { create(:user) }
+          let(:Authorization) { "Bearer mock-firebase-token" }
+          let(:score) do
+            {
+              score: {
+                title: 'Test Song',
+                key_name: 'C',
+                key_mode: 'invalid'
+              }
+            }
+          end
+
+          before { stub_firebase_verification(user) }
+
+          run_test! do |response|
+            data = JSON.parse(response.body)
+            expect(data['errors']).to include("Key mode is not included in the list")
+          end
+        end
+
         context 'when tempo is invalid' do
           let(:user) { create(:user) }
           let(:Authorization) { "Bearer mock-firebase-token" }
@@ -345,6 +375,7 @@ RSpec.describe 'api/scores', type: :request do
               score: {
                 title: 'Test Song',
                 key_name: 'C',
+                key_mode: 'major',
                 tempo: 600
               }
             }
@@ -458,6 +489,7 @@ RSpec.describe 'api/scores', type: :request do
             properties: {
               title: { type: :string },
               key_name: { type: :string },
+              key_mode: { type: :string, enum: ['major', 'minor'] },
               tempo: { type: :integer },
               time_signature: { type: :string },
               published: { type: :boolean },
@@ -498,6 +530,7 @@ RSpec.describe 'api/scores', type: :request do
                  title: { type: :string },
                  key: { type: :integer },
                  key_name: { type: :string },
+                 key_mode: { type: :string },
                  tempo: { type: :integer, nullable: true },
                  time_signature: { type: :string, nullable: true },
                  measures: {
@@ -534,6 +567,7 @@ RSpec.describe 'api/scores', type: :request do
             score: {
               title: 'Updated Complete Song',
               key_name: 'G',
+              key_mode: 'minor',
               tempo: 100,
               time_signature: '4/4',
               published: true,
@@ -566,6 +600,7 @@ RSpec.describe 'api/scores', type: :request do
           expect(data['title']).to eq('Updated Complete Song')
           expect(data['key']).to eq(10) # G maps to 10
           expect(data['key_name']).to eq('G')
+          expect(data['key_mode']).to eq('minor')
           expect(data['tempo']).to eq(100)
           expect(data['time_signature']).to eq('4/4')
           expect(data['id']).to eq(existing_score.id)
@@ -619,6 +654,7 @@ RSpec.describe 'api/scores', type: :request do
             score: {
               title: 'Updated Song',
               key_name: 'D',
+              key_mode: 'major',
               measures_attributes: [
                 {
                   id: measure1.id,
@@ -688,6 +724,7 @@ RSpec.describe 'api/scores', type: :request do
             score: {
               title: 'Simplified Song',
               key_name: 'C',
+              key_mode: 'major',
               measures_attributes: [
                 {
                   id: measure1.id,
@@ -772,6 +809,7 @@ RSpec.describe 'api/scores', type: :request do
               score: {
                 title: '', # Invalid - blank title
                 key_name: 'C',
+                key_mode: 'major',
                 measures_attributes: [
                   {
                     position: 1,
@@ -802,6 +840,7 @@ RSpec.describe 'api/scores', type: :request do
               score: {
                 title: 'Test Song',
                 key_name: 'C',
+                key_mode: 'major',
                 measures_attributes: [
                   {
                     position: 1,
@@ -832,6 +871,7 @@ RSpec.describe 'api/scores', type: :request do
               score: {
                 title: 'Test Song',
                 key_name: 'InvalidKey',
+                key_mode: 'major',
                 measures_attributes: []
               }
             }
@@ -855,6 +895,7 @@ RSpec.describe 'api/scores', type: :request do
               score: {
                 title: 'Test Song',
                 key_name: 'C',
+                key_mode: 'major',
                 tempo: 600, # Invalid tempo
                 measures_attributes: []
               }

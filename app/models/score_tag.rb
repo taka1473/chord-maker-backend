@@ -2,7 +2,7 @@
 #
 # Table name: score_tags
 #
-#  id         :bigint           not null, primary key
+#  id         :integer          not null, primary key
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
 #  score_id   :bigint           not null
@@ -16,8 +16,8 @@
 #
 # Foreign Keys
 #
-#  fk_rails_...  (score_id => scores.id)
-#  fk_rails_...  (tag_id => tags.id)
+#  score_id  (score_id => scores.id)
+#  tag_id    (tag_id => tags.id)
 #
 class ScoreTag < ApplicationRecord
   belongs_to :score

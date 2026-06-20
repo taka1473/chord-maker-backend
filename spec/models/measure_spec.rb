@@ -2,7 +2,7 @@
 #
 # Table name: measures
 #
-#  id         :bigint           not null, primary key
+#  id         :integer          not null, primary key
 #  key        :integer
 #  key_name   :string
 #  position   :integer          not null
@@ -16,7 +16,7 @@
 #
 # Foreign Keys
 #
-#  fk_rails_...  (score_id => scores.id)
+#  score_id  (score_id => scores.id)
 #
 require 'rails_helper'
 
