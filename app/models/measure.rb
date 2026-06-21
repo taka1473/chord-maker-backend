@@ -22,7 +22,7 @@
 #
 class Measure < ApplicationRecord
   belongs_to :score
-  has_many :chords, dependent: :destroy
+  has_many :chords, -> { order(:position) }, dependent: :destroy
 
   accepts_nested_attributes_for :chords, allow_destroy: true
   

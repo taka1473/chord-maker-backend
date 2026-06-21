@@ -426,45 +426,61 @@ RSpec.describe 'api/scores', type: :request do
           expect(data['measures']).to be_present
           expect(data['measures'].length).to eq(2)
 
-          # Test measure attributes and order
-          measures = data['measures'].sort_by { |m| m['position'] }
-          expect(measures[0]['id']).to eq(measure1.id)
-          expect(measures[0]['position']).to eq(1)
-          expect(measures[0]['row_break_before']).to eq(false)
-          expect(measures[1]['id']).to eq(measure2.id)
-          expect(measures[1]['position']).to eq(2)
-          expect(measures[1]['row_break_before']).to eq(false)
+          # Test measure attributes and order (must be sorted by position without client-side sort)
+          expect(data['measures'][0]['id']).to eq(measure1.id)
+          expect(data['measures'][0]['position']).to eq(1)
+          expect(data['measures'][0]['row_break_before']).to eq(false)
+          expect(data['measures'][1]['id']).to eq(measure2.id)
+          expect(data['measures'][1]['position']).to eq(2)
+          expect(data['measures'][1]['row_break_before']).to eq(false)
 
           # Test chords are included in measures
-          measure1_data = measures.find { |m| m['id'] == measure1.id }
-          measure2_data = measures.find { |m| m['id'] == measure2.id }
+          measure1_data = data['measures'][0]
+          measure2_data = data['measures'][1]
 
           expect(measure1_data['chords']).to be_present
           expect(measure1_data['chords'].length).to eq(2)
           expect(measure2_data['chords']).to be_present
           expect(measure2_data['chords'].length).to eq(1)
 
-          # Test chord attributes for measure1
-          chords_m1 = measure1_data['chords'].sort_by { |c| c['position'] }
-          expect(chords_m1[0]['id']).to eq(chord1.id)
-          expect(chords_m1[0]['position']).to eq(1)
-          expect(chords_m1[0]['root_offset']).to eq(0)
-          expect(chords_m1[0]['bass_offset']).to eq(0)
-          expect(chords_m1[0]['chord_type']).to eq('major')
+          # Test chord attributes for measure1 (must be sorted by position without client-side sort)
+          expect(measure1_data['chords'][0]['id']).to eq(chord1.id)
+          expect(measure1_data['chords'][0]['position']).to eq(1)
+          expect(measure1_data['chords'][0]['root_offset']).to eq(0)
+          expect(measure1_data['chords'][0]['bass_offset']).to eq(0)
+          expect(measure1_data['chords'][0]['chord_type']).to eq('major')
 
-          expect(chords_m1[1]['id']).to eq(chord2.id)
-          expect(chords_m1[1]['position']).to eq(2)
-          expect(chords_m1[1]['root_offset']).to eq(5)
-          expect(chords_m1[1]['bass_offset']).to eq(5)
-          expect(chords_m1[1]['chord_type']).to eq('minor')
+          expect(measure1_data['chords'][1]['id']).to eq(chord2.id)
+          expect(measure1_data['chords'][1]['position']).to eq(2)
+          expect(measure1_data['chords'][1]['root_offset']).to eq(5)
+          expect(measure1_data['chords'][1]['bass_offset']).to eq(5)
+          expect(measure1_data['chords'][1]['chord_type']).to eq('minor')
 
           # Test chord attributes for measure2
-          chords_m2 = measure2_data['chords']
-          expect(chords_m2[0]['id']).to eq(chord3.id)
-          expect(chords_m2[0]['position']).to eq(1)
-          expect(chords_m2[0]['root_offset']).to eq(7)
-          expect(chords_m2[0]['bass_offset']).to eq(7)
-          expect(chords_m2[0]['chord_type']).to eq('major')
+          expect(measure2_data['chords'][0]['id']).to eq(chord3.id)
+          expect(measure2_data['chords'][0]['position']).to eq(1)
+          expect(measure2_data['chords'][0]['root_offset']).to eq(7)
+          expect(measure2_data['chords'][0]['bass_offset']).to eq(7)
+          expect(measure2_data['chords'][0]['chord_type']).to eq('major')
+        end
+      end
+
+      response(200, 'returns measures and chords in position order even when inserted in reverse') do
+        schema '$ref' => '#/components/schemas/Score'
+
+        let(:score) { create(:score, :published, key_name: 'C') }
+        # Create in reverse order to verify DB insertion order is not relied upon
+        let!(:measure2) { create(:measure, score: score, position: 2) }
+        let!(:measure1) { create(:measure, score: score, position: 1) }
+        let!(:chord2) { create(:chord, measure: measure1, position: 2, root_offset: 5, bass_offset: 5, chord_type: 'minor') }
+        let!(:chord1) { create(:chord, measure: measure1, position: 1, root_offset: 0, bass_offset: 0, chord_type: 'major') }
+        let(:id) { score.slug }
+
+        run_test! do |response|
+          data = JSON.parse(response.body)
+
+          expect(data['measures'].map { |m| m['position'] }).to eq([1, 2])
+          expect(data['measures'][0]['chords'].map { |c| c['position'] }).to eq([1, 2])
         end
       end
 

@@ -51,7 +51,7 @@ class Score < ApplicationRecord
   }
 
   belongs_to :user, optional: true
-  has_many :measures, dependent: :destroy
+  has_many :measures, -> { order(:position) }, dependent: :destroy
   has_many :chords, through: :measures
   has_many :score_tags, dependent: :destroy
   has_many :tags, through: :score_tags
