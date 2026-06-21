@@ -364,6 +364,15 @@ paths:
                             type: integer
                           position:
                             type: integer
+                          key_name:
+                            type: string
+                            nullable: true
+                          key_mode:
+                            type: string
+                            enum:
+                            - major
+                            - minor
+                            nullable: true
                           _destroy:
                             type: boolean
                           chords_attributes:

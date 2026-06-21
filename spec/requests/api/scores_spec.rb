@@ -500,6 +500,8 @@ RSpec.describe 'api/scores', type: :request do
                   properties: {
                     id: { type: :integer },
                     position: { type: :integer },
+                    key_name: { type: :string, nullable: true },
+                    key_mode: { type: :string, enum: ['major', 'minor'], nullable: true },
                     _destroy: { type: :boolean },
                     chords_attributes: {
                       type: :array,
@@ -574,6 +576,8 @@ RSpec.describe 'api/scores', type: :request do
               measures_attributes: [
                 {
                   position: 1,
+                  key_name: 'A',
+                  key_mode: 'minor',
                   chords_attributes: [
                     { position: 1, root_offset: 0, bass_offset: 0, chord_type: 'major' },
                     { position: 2, root_offset: 5, bass_offset: 5, chord_type: 'minor' }
@@ -614,6 +618,8 @@ RSpec.describe 'api/scores', type: :request do
           # Test measure 1
           measure1 = measures[0]
           expect(measure1['position']).to eq(1)
+          expect(measure1['key_name']).to eq('A')
+          expect(measure1['key_mode']).to eq('minor')
           expect(measure1['chords'].length).to eq(2)
 
           chords_m1 = measure1['chords'].sort_by { |c| c['position'] }

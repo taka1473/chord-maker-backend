@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_06_20_122022) do
+ActiveRecord::Schema[8.0].define(version: 2026_06_21_120445) do
   create_table "chords", force: :cascade do |t|
     t.bigint "measure_id", null: false
     t.integer "position", null: false
@@ -29,6 +29,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_06_20_122022) do
     t.datetime "updated_at", null: false
     t.integer "key"
     t.string "key_name"
+    t.string "key_mode"
     t.index ["score_id"], name: "index_measures_on_score_id"
   end
 
