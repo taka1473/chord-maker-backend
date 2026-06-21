@@ -312,6 +312,8 @@ paths:
                           type: integer
                         position:
                           type: integer
+                        row_break_before:
+                          type: boolean
                         chords:
                           type: array
                           items:
@@ -373,6 +375,8 @@ paths:
                             - major
                             - minor
                             nullable: true
+                          row_break_before:
+                            type: boolean
                           _destroy:
                             type: boolean
                           chords_attributes:
@@ -441,6 +445,9 @@ components:
         position:
           type: integer
           description: Position of the measure in the score
+        row_break_before:
+          type: boolean
+          description: Whether this measure starts a new row in the chord chart
         chords:
           type: array
           items:
@@ -449,6 +456,7 @@ components:
       required:
       - id
       - position
+      - row_break_before
       - chords
     Chord:
       type: object

@@ -2,14 +2,15 @@
 #
 # Table name: measures
 #
-#  id         :integer          not null, primary key
-#  key        :integer
-#  key_mode   :string
-#  key_name   :string
-#  position   :integer          not null
-#  created_at :datetime         not null
-#  updated_at :datetime         not null
-#  score_id   :bigint           not null
+#  id               :integer          not null, primary key
+#  key              :integer
+#  key_mode         :string
+#  key_name         :string
+#  position         :integer          not null
+#  row_break_before :boolean          default(FALSE), not null
+#  created_at       :datetime         not null
+#  updated_at       :datetime         not null
+#  score_id         :bigint           not null
 #
 # Indexes
 #

@@ -64,13 +64,17 @@ RSpec.configure do |config|
           Measure: {
             type: :object,
             properties: {
-              id: { 
-                type: :integer, 
-                description: 'Unique identifier for the measure' 
+              id: {
+                type: :integer,
+                description: 'Unique identifier for the measure'
               },
-              position: { 
-                type: :integer, 
-                description: 'Position of the measure in the score' 
+              position: {
+                type: :integer,
+                description: 'Position of the measure in the score'
+              },
+              row_break_before: {
+                type: :boolean,
+                description: 'Whether this measure starts a new row in the chord chart'
               },
               chords: {
                 type: :array,
@@ -78,7 +82,7 @@ RSpec.configure do |config|
                 description: 'Array of chords in this measure'
               }
             },
-            required: [:id, :position, :chords]
+            required: [:id, :position, :row_break_before, :chords]
           },
           
           Chord: {

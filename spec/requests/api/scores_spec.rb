@@ -430,8 +430,10 @@ RSpec.describe 'api/scores', type: :request do
           measures = data['measures'].sort_by { |m| m['position'] }
           expect(measures[0]['id']).to eq(measure1.id)
           expect(measures[0]['position']).to eq(1)
+          expect(measures[0]['row_break_before']).to eq(false)
           expect(measures[1]['id']).to eq(measure2.id)
           expect(measures[1]['position']).to eq(2)
+          expect(measures[1]['row_break_before']).to eq(false)
 
           # Test chords are included in measures
           measure1_data = measures.find { |m| m['id'] == measure1.id }
@@ -502,6 +504,7 @@ RSpec.describe 'api/scores', type: :request do
                     position: { type: :integer },
                     key_name: { type: :string, nullable: true },
                     key_mode: { type: :string, enum: ['major', 'minor'], nullable: true },
+                    row_break_before: { type: :boolean },
                     _destroy: { type: :boolean },
                     chords_attributes: {
                       type: :array,
@@ -542,6 +545,7 @@ RSpec.describe 'api/scores', type: :request do
                      properties: {
                        id: { type: :integer },
                        position: { type: :integer },
+                       row_break_before: { type: :boolean },
                        chords: {
                          type: :array,
                          items: {
