@@ -255,7 +255,8 @@ paths:
       summary: show score
       responses:
         '200':
-          description: successful
+          description: returns measures and chords in position order even when inserted
+            in reverse
           content:
             application/json:
               schema:
@@ -396,6 +397,21 @@ paths:
                                   type: string
                                 _destroy:
                                   type: boolean
+  "/api/tags":
+    get:
+      summary: suggest tags
+      tags:
+      - Tags
+      parameters:
+      - name: q
+        in: query
+        required: false
+        description: Search query (min 2 chars). Supports partial match.
+        schema:
+          type: string
+      responses:
+        '200':
+          description: excludes tags only on unpublished scores
 components:
   schemas:
     Score:

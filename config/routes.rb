@@ -7,6 +7,8 @@ Rails.application.routes.draw do
   root "scores#index"
 
   namespace :api do
+    resources :tags, only: [ :index ]
+
     get "users/me", to: "users#me"
     patch "users/me", to: "users#update_me"
 
