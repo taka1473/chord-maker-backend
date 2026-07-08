@@ -21,8 +21,14 @@
 #
 class Chord < ApplicationRecord
   CHORD_TYPES = %w[
-    major minor 7 maj7 min7 min7-5
-    dim dim7 aug sus2 sus4 add9
+    major minor 7
+    6 min6
+    maj7 min7 min7-5
+    maj9 min9
+    add9
+    dim dim7
+    aug aug7
+    sus2 sus4 7sus4
   ].freeze
 
   belongs_to :measure
