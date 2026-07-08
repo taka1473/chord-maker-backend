@@ -85,7 +85,7 @@ class Score < ApplicationRecord
     guest_expires_at.nil? || guest_expires_at.past?
   end
   scope :search, ->(query) {
-    where("title ILIKE :q OR artist ILIKE :q", q: "%#{query}%")
+    where("title LIKE :q OR artist LIKE :q", q: "%#{query}%")
   }
   scope :by_tags, ->(tag_names) {
     where(id: ScoreTag.joins(:tag)
