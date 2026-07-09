@@ -15,7 +15,7 @@ class Tag < ApplicationRecord
   has_many :score_tags, dependent: :destroy
   has_many :scores, through: :score_tags
 
-  validates :name, presence: true, uniqueness: true, length: { maximum: 30 }
+  validates :name, presence: true, uniqueness: true, length: { maximum: 40 }
 
   def self.suggest(query, limit: 8)
     q = query.to_s.strip.downcase
