@@ -23,7 +23,7 @@ class Chord < ApplicationRecord
   CHORD_TYPES = %w[
     major minor 7
     6 min6
-    maj7 min7 min7-5
+    maj7 min7 min7-5 minmaj7
     maj9 min9
     add9
     dim dim7

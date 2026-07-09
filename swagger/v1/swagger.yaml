@@ -509,6 +509,7 @@ components:
       - maj7
       - min7
       - min7-5
+      - minmaj7
       - maj9
       - min9
       - add9
