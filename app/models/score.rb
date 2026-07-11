@@ -65,11 +65,13 @@ class Score < ApplicationRecord
   validates :key_mode, presence: true, inclusion: { in: KEY_MODES }
   validates :tempo, numericality: { greater_than: 0, less_than: 500 }, allow_blank: true
   validate :user_or_guest_token_present
+  validate :validate_tag_names
 
   before_validation :set_key
   before_validation :generate_slug, on: :create
   before_validation :generate_guest_token, on: :create, if: -> { user.nil? }
   before_validation :set_guest_expires_at, on: :create, if: -> { user.nil? }
+  before_save :assign_pending_tags
 
   accepts_nested_attributes_for :measures, allow_destroy: true
   accepts_nested_attributes_for :chords, allow_destroy: true
@@ -96,16 +98,34 @@ class Score < ApplicationRecord
   }
 
   def tag_names
-    tags.pluck(:name)
+    @tag_names_assigned ? @pending_tag_names : tags.pluck(:name)
   end
 
+  # 生のタグ名を保持するだけ（DB には書き込まない）。
+  # 実際のタグ作成・関連付けは validation 通過後に before_save で行う。
   def tag_names=(names)
-    self.tags = Array(names).map(&:strip).reject(&:blank?).uniq.map do |name|
-      Tag.find_or_create_by!(name: name)
-    end
+    @pending_tag_names = Array(names).map { |name| name.to_s.strip }.reject(&:blank?).uniq
+    @tag_names_assigned = true
   end
 
   private
+
+  def validate_tag_names
+    return unless @tag_names_assigned
+
+    @pending_tag_names.each do |name|
+      if name.length > Tag::NAME_MAX_LENGTH
+        errors.add(:tags, :too_long, name: name, count: Tag::NAME_MAX_LENGTH)
+      end
+    end
+  end
+
+  def assign_pending_tags
+    return unless @tag_names_assigned
+
+    self.tags = @pending_tag_names.map { |name| Tag.find_or_create_by(name: name) }
+    @tag_names_assigned = false
+  end
 
   def set_key
     self.key = KEY_MAP[key_name]

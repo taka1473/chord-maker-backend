@@ -12,10 +12,12 @@
 #  index_tags_on_name  (name) UNIQUE
 #
 class Tag < ApplicationRecord
+  NAME_MAX_LENGTH = 40
+
   has_many :score_tags, dependent: :destroy
   has_many :scores, through: :score_tags
 
-  validates :name, presence: true, uniqueness: true, length: { maximum: 40 }
+  validates :name, presence: true, uniqueness: true, length: { maximum: NAME_MAX_LENGTH }
 
   def self.suggest(query, limit: 8)
     q = query.to_s.strip.downcase

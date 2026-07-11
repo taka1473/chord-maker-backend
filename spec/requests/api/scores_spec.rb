@@ -301,7 +301,7 @@ RSpec.describe 'api/scores', type: :request do
 
           run_test! do |response|
             data = JSON.parse(response.body)
-            expect(data['errors']).to include("Title can't be blank")
+            expect(data['errors']['title']).to include("タイトルを入力してください")
           end
         end
 
@@ -321,7 +321,7 @@ RSpec.describe 'api/scores', type: :request do
 
           run_test! do |response|
             data = JSON.parse(response.body)
-            expect(data['errors']).to include("Key name can't be blank")
+            expect(data['errors']['key_name']).to include("キーを入力してください")
           end
         end
 
@@ -342,7 +342,7 @@ RSpec.describe 'api/scores', type: :request do
 
           run_test! do |response|
             data = JSON.parse(response.body)
-            expect(data['errors']).to include("Key name is not included in the list")
+            expect(data['errors']['key_name']).to include("キーは一覧にない値です")
           end
         end
 
@@ -363,7 +363,7 @@ RSpec.describe 'api/scores', type: :request do
 
           run_test! do |response|
             data = JSON.parse(response.body)
-            expect(data['errors']).to include("Key mode is not included in the list")
+            expect(data['errors']['key_mode']).to include("メジャー/マイナーは一覧にない値です")
           end
         end
 
@@ -385,7 +385,7 @@ RSpec.describe 'api/scores', type: :request do
 
           run_test! do |response|
             data = JSON.parse(response.body)
-            expect(data['errors']).to include("Tempo must be less than 500")
+            expect(data['errors']['tempo']).to include("テンポは500より小さい値にしてください")
           end
         end
       end
@@ -852,7 +852,7 @@ RSpec.describe 'api/scores', type: :request do
 
           run_test! do |response|
             data = JSON.parse(response.body)
-            expect(data['errors']).to include("Title can't be blank")
+            expect(data['errors']['title']).to include("タイトルを入力してください")
           end
         end
 
@@ -883,7 +883,33 @@ RSpec.describe 'api/scores', type: :request do
 
           run_test! do |response|
             data = JSON.parse(response.body)
-            expect(data['errors']).to include("Measures chords root offset must be less than or equal to 11")
+            messages = data['errors'].values.flatten
+            expect(messages).to include(a_string_including("11以下の値にしてください"))
+          end
+        end
+
+        context 'when tag name is too long' do
+          let(:user) { create(:user) }
+          let(:Authorization) { "Bearer mock-firebase-token" }
+          let(:existing_score) { create(:score, title: 'Test Song', key_name: 'C', user: user) }
+          let(:id) { existing_score.slug }
+          let(:score) do
+            {
+              score: {
+                title: 'Test Song',
+                key_name: 'C',
+                key_mode: 'major',
+                tag_names: [ 'a' * 41 ],
+                measures_attributes: []
+              }
+            }
+          end
+
+          before { stub_firebase_verification(user) }
+
+          run_test! do |response|
+            data = JSON.parse(response.body)
+            expect(data['errors']['tags']).to include(a_string_including("40文字以内で入力してください"))
           end
         end
 
@@ -907,7 +933,7 @@ RSpec.describe 'api/scores', type: :request do
 
           run_test! do |response|
             data = JSON.parse(response.body)
-            expect(data['errors']).to include("Key name is not included in the list")
+            expect(data['errors']['key_name']).to include("キーは一覧にない値です")
           end
         end
 
@@ -932,7 +958,7 @@ RSpec.describe 'api/scores', type: :request do
 
           run_test! do |response|
             data = JSON.parse(response.body)
-            expect(data['errors']).to include("Tempo must be less than 500")
+            expect(data['errors']['tempo']).to include("テンポは500より小さい値にしてください")
           end
         end
       end

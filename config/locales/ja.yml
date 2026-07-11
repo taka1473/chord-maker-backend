@@ -1,0 +1,64 @@
+ja:
+  errors:
+    format: "%{attribute}%{message}"
+    messages:
+      blank: "を入力してください"
+      present: "は入力しないでください"
+      too_long: "は%{count}文字以内で入力してください"
+      too_short: "は%{count}文字以上で入力してください"
+      wrong_length: "は%{count}文字で入力してください"
+      taken: "はすでに使用されています"
+      inclusion: "は一覧にない値です"
+      exclusion: "は予約されています"
+      invalid: "は不正な値です"
+      not_a_number: "は数値で入力してください"
+      not_an_integer: "は整数で入力してください"
+      greater_than: "は%{count}より大きい値にしてください"
+      greater_than_or_equal_to: "は%{count}以上の値にしてください"
+      less_than: "は%{count}より小さい値にしてください"
+      less_than_or_equal_to: "は%{count}以下の値にしてください"
+      equal_to: "は%{count}にしてください"
+      other_than: "は%{count}以外の値にしてください"
+
+  activerecord:
+    errors:
+      format: "%{attribute}%{message}"
+      messages:
+        blank: "を入力してください"
+        too_long: "は%{count}文字以内で入力してください"
+        too_short: "は%{count}文字以上で入力してください"
+        taken: "はすでに使用されています"
+        inclusion: "は一覧にない値です"
+        invalid: "は不正な値です"
+        not_a_number: "は数値で入力してください"
+        greater_than: "は%{count}より大きい値にしてください"
+        greater_than_or_equal_to: "は%{count}以上の値にしてください"
+        less_than: "は%{count}より小さい値にしてください"
+        less_than_or_equal_to: "は%{count}以下の値にしてください"
+      models:
+        score:
+          attributes:
+            tags:
+              too_long: "「%{name}」は%{count}文字以内で入力してください"
+    attributes:
+      score:
+        title: タイトル
+        artist: アーティスト
+        tempo: テンポ
+        time_signature: 拍子
+        key: キー
+        key_name: キー
+        key_mode: メジャー/マイナー
+        tags: タグ
+        published: 公開設定
+      user:
+        name: ハンドルネーム
+      measure:
+        position: 小節の位置
+        key_name: 小節のキー
+        key_mode: 小節のメジャー/マイナー
+      chord:
+        position: コードの位置
+        root_offset: ルート音
+        bass_offset: ベース音
+        chord_type: コードタイプ

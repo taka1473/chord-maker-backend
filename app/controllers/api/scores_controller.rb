@@ -34,7 +34,7 @@ class Api::ScoresController < ApplicationController
       json["guest_token"] = score.guest_token if score.guest?
       render json: json, status: :created
     else
-      render json: { errors: score.errors.full_messages }, status: :unprocessable_entity
+      render_validation_errors(score)
     end
   end
 
@@ -66,7 +66,7 @@ class Api::ScoresController < ApplicationController
         include: { measures: { only: [ :id, :position, :key, :key_name, :key_mode, :row_break_before ], include: { chords: { only: [ :id, :root_offset, :bass_offset, :chord_type, :position ] } } } },
         status: :ok
     else
-      render json: { errors: @score.errors.full_messages }, status: :unprocessable_entity
+      render_validation_errors(@score)
     end
   end
 

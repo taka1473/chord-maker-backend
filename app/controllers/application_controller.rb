@@ -1,6 +1,16 @@
 class ApplicationController < ActionController::API
   private
 
+  # バリデーションエラーをフィールドキー付きの形で返す。
+  # 例: { errors: { "title" => ["タイトルを入力してください"], "tempo" => [...] } }
+  # measures/chords などのネストや base のエラーもキーとして含まれる。
+  def render_validation_errors(record)
+    errors = record.errors.group_by_attribute.transform_keys(&:to_s).transform_values do |attr_errors|
+      attr_errors.map(&:full_message)
+    end
+    render json: { errors: errors }, status: :unprocessable_entity
+  end
+
   def authenticate!
     token = extract_token_from_header
     if token.nil?
