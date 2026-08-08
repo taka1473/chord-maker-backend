@@ -20,7 +20,7 @@ jobs:
 
       - name: Run diagnostics
         run: |
-          ssh root@${{ secrets.SERVER_IP }} '
+          ssh root@136.113.210.132 '
             echo "=== df -h ==="
             df -h
             echo "=== df -i (inodes) ==="
