@@ -1,0 +1,32 @@
+# ディスク容量を解放するため、停止済みコンテナと未使用イメージを削除するワークフロー。
+# 稼働中のコンテナ(web, kamal-proxy)とそのイメージ、ボリュームには影響しない。
+# GitHub Actions の "Run workflow" から実行する。
+name: Server cleanup
+
+on:
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          echo "StrictHostKeyChecking=no" > ~/.ssh/config
+
+      - name: Clean up stopped containers and unused images
+        run: |
+          ssh github-actions@136.113.210.132 '
+            echo "=== before ==="
+            df -h /
+            docker container prune -f
+            docker image prune -af
+            echo "=== after ==="
+            df -h /
+            docker system df
+          '
