@@ -20,7 +20,7 @@ jobs:
 
       - name: Run diagnostics
         run: |
-          ssh root@136.113.210.132 '
+          ssh github-actions@136.113.210.132 '
             echo "=== df -h ==="
             df -h
             echo "=== df -i (inodes) ==="
