@@ -2,18 +2,20 @@ require 'rails_helper'
 
 RSpec.describe LineNotifier do
   describe ".notify" do
-    context "when LINE env vars are not configured" do
+    context "when line credentials are not configured" do
       it "skips without calling the API and returns false" do
         expect_any_instance_of(Net::HTTP).not_to receive(:request)
         expect(described_class.notify("hello")).to be false
       end
     end
 
-    context "when LINE env vars are configured" do
+    context "when line credentials are configured" do
       before do
-        allow(ENV).to receive(:[]).and_call_original
-        allow(ENV).to receive(:[]).with("LINE_CHANNEL_ACCESS_TOKEN").and_return("test-token")
-        allow(ENV).to receive(:[]).with("LINE_ADMIN_USER_ID").and_return("U1234567890")
+        allow(Rails.application.credentials).to receive(:dig).and_call_original
+        allow(Rails.application.credentials).to receive(:dig)
+          .with(:line, :channel_access_token).and_return("test-token")
+        allow(Rails.application.credentials).to receive(:dig)
+          .with(:line, :admin_user_id).and_return("U1234567890")
       end
 
       it "returns true when the push succeeds" do
