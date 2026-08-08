@@ -1,10 +1,12 @@
 # ディスク容量を解放するため、停止済みコンテナと未使用イメージを削除するワークフロー。
 # 稼働中のコンテナ(web, kamal-proxy)とそのイメージ、ボリュームには影響しない。
-# GitHub Actions の "Run workflow" から実行する。
+# 毎週月曜 3:00 JST に自動実行。GitHub Actions の "Run workflow" から手動実行も可能。
 name: Server cleanup
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: "0 18 * * 0" # 毎週月曜 3:00 JST (日曜 18:00 UTC)
 
 jobs:
   cleanup:

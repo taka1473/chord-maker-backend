@@ -15,6 +15,11 @@ servers:
 # e2-micro ではイメージ pull と新旧コンテナ並走で起動が遅く、デフォルト 30 秒では不足する。
 deploy_timeout: 120
 
+# 過去のコンテナの保持世代数（デフォルト 5）。
+# 停止済みコンテナが古いイメージを参照し続けると kamal の prune でイメージが消せず、
+# 10GB ディスクが枯渇してデプロイ不能になるため、ロールバック用の 1 世代のみ残す。
+retain_containers: 2
+
 # Enable SSL auto certification via Let's Encrypt.
 # TODO: 取得したドメインに変更
 proxy:

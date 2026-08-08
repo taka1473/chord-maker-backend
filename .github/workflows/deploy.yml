@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
 
+# 同時に 1 つのデプロイのみ実行(後続は待機)。並行デプロイによるロック競合を防ぐ
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -26,6 +31,21 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           echo "StrictHostKeyChecking=no" > ~/.ssh/config
+
+      # ディスク使用率が 85% を超えていたら、デプロイ前に停止済みコンテナと
+      # 未使用イメージを削除して空きを確保する(ディスクフルによるデプロイ失敗の予防)
+      - name: Ensure disk space
+        run: |
+          ssh github-actions@136.113.210.132 '
+            usage=$(df / --output=pcent | tail -1 | tr -dc "0-9")
+            echo "Disk usage: ${usage}%"
+            if [ "$usage" -ge 85 ]; then
+              echo "Disk usage is high, pruning stopped containers and unused images..."
+              docker container prune -f
+              docker image prune -af
+              df -h /
+            fi
+          '
 
       - name: Bootstrap server (install Docker if needed)
         run: bin/kamal server bootstrap
