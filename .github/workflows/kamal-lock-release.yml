@@ -1,0 +1,34 @@
+# デプロイが中断されてロックが残った場合に、手動でロックを解除するためのワークフロー。
+# GitHub Actions の "Run workflow" から実行する。
+name: Release Kamal deploy lock
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release-lock:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          echo "StrictHostKeyChecking=no" > ~/.ssh/config
+
+      - name: Release deploy lock
+        run: bin/kamal lock release
+        env:
+          KAMAL_REGISTRY_USERNAME: ${{ github.actor }}
+          KAMAL_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          RAILS_MASTER_KEY: ${{ secrets.RAILS_PRODUCTION_MASTER_KEY }}
+          LITESTREAM_GCS_BUCKET: ${{ secrets.LITESTREAM_GCS_BUCKET }}

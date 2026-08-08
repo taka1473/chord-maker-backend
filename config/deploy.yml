@@ -11,6 +11,10 @@ servers:
     # TODO: Compute Engine の外部 IP アドレスに変更
     - 136.113.210.132
 
+# 新コンテナがヘルスチェックに応答するまでの待ち時間（秒）。
+# e2-micro ではイメージ pull と新旧コンテナ並走で起動が遅く、デフォルト 30 秒では不足する。
+deploy_timeout: 120
+
 # Enable SSL auto certification via Let's Encrypt.
 # TODO: 取得したドメインに変更
 proxy:
