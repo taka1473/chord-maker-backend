@@ -12,6 +12,7 @@ Rails.application.routes.draw do
 
     get "users/me", to: "users#me"
     patch "users/me", to: "users#update_me"
+    delete "users/me", to: "users#destroy_me"
 
     resources :scores, only: [ :index, :create, :destroy ] do
       member do

@@ -526,6 +526,24 @@ paths:
       responses:
         '200':
           description: excludes tags only on unpublished scores
+  "/api/users/me":
+    delete:
+      summary: delete own account
+      tags:
+      - Users
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: account deleted and scores anonymized
+        '401':
+          description: unauthorized
 components:
   schemas:
     Score:
