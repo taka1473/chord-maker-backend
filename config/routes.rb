@@ -8,6 +8,7 @@ Rails.application.routes.draw do
 
   namespace :api do
     resources :tags, only: [ :index ]
+    resources :contacts, only: [ :create ]
 
     get "users/me", to: "users#me"
     patch "users/me", to: "users#update_me"
@@ -31,6 +32,7 @@ Rails.application.routes.draw do
         collection { post :import }
       end
       resources :tags, only: [ :index, :destroy ]
+      resources :contacts, only: [ :index, :update ]
     end
   end
 end

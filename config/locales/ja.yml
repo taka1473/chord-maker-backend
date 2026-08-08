@@ -53,6 +53,12 @@ ja:
         published: 公開設定
       user:
         name: ハンドルネーム
+      contact:
+        category: お問い合わせ種別
+        body: お問い合わせ内容
+        email: メールアドレス
+        score_url: 対象スコアの URL
+        status: 対応ステータス
       measure:
         position: 小節の位置
         key_name: 小節のキー

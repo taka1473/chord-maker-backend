@@ -4,6 +4,82 @@ info:
   title: API V1
   version: v1
 paths:
+  "/api/admin/contacts":
+    get:
+      summary: list contacts
+      tags:
+      - Admin
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+      - name: status
+        in: query
+        required: false
+        description: Filter by status (open / resolved)
+        schema:
+          type: string
+      - name: category
+        in: query
+        required: false
+        description: Filter by category (rights_violation / bug / other)
+        schema:
+          type: string
+      responses:
+        '200':
+          description: filtered by status
+        '403':
+          description: forbidden (non-admin)
+  "/api/admin/contacts/{id}":
+    patch:
+      summary: update contact status
+      tags:
+      - Admin
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: status updated
+        '404':
+          description: contact not found
+        '403':
+          description: forbidden (non-admin)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                contact:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      enum:
+                      - open
+                      - resolved
+                  required:
+                  - status
   "/api/admin/scores":
     get:
       summary: list all scores
@@ -176,6 +252,44 @@ paths:
           description: forbidden (non-admin)
         '404':
           description: not found
+  "/api/contacts":
+    post:
+      summary: create contact
+      tags:
+      - Contacts
+      parameters: []
+      responses:
+        '201':
+          description: 'honeypot filled (bot): pretends success without saving'
+        '422':
+          description: validation error
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                contact:
+                  type: object
+                  properties:
+                    category:
+                      type: string
+                      enum:
+                      - rights_violation
+                      - bug
+                      - other
+                    body:
+                      type: string
+                    email:
+                      type: string
+                    score_url:
+                      type: string
+                  required:
+                  - category
+                  - body
+                website:
+                  type: string
+                  description: Honeypot field. Must be empty.
   "/api/scores":
     get:
       summary: list scores

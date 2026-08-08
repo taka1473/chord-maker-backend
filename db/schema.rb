@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_06_21_124826) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_08_165129) do
   create_table "chords", force: :cascade do |t|
     t.bigint "measure_id", null: false
     t.integer "position", null: false
@@ -20,6 +20,17 @@ ActiveRecord::Schema[8.0].define(version: 2026_06_21_124826) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["measure_id"], name: "index_chords_on_measure_id"
+  end
+
+  create_table "contacts", force: :cascade do |t|
+    t.string "category", null: false
+    t.text "body", null: false
+    t.string "email"
+    t.string "score_url"
+    t.string "status", default: "open", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["status"], name: "index_contacts_on_status"
   end
 
   create_table "measures", force: :cascade do |t|
