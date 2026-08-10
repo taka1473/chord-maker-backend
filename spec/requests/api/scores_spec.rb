@@ -185,7 +185,31 @@ RSpec.describe 'api/scores', type: :request do
               key_mode: { type: :string, enum: ['major', 'minor'] },
               tempo: { type: :integer },
               time_signature: { type: :string },
-              published: { type: :boolean }
+              published: { type: :boolean },
+              measures_attributes: {
+                type: :array,
+                items: {
+                  type: :object,
+                  properties: {
+                    position: { type: :integer },
+                    key_name: { type: :string, nullable: true },
+                    key_mode: { type: :string, enum: [ 'major', 'minor' ], nullable: true },
+                    row_break_before: { type: :boolean },
+                    chords_attributes: {
+                      type: :array,
+                      items: {
+                        type: :object,
+                        properties: {
+                          position: { type: :integer },
+                          root_offset: { type: :integer },
+                          bass_offset: { type: :integer },
+                          chord_type: { type: :string }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
             },
             required: ['title', 'key_name', 'key_mode']
           }
@@ -223,13 +247,75 @@ RSpec.describe 'api/scores', type: :request do
           expect(data['time_signature']).to eq('3/4')
           expect(data['id']).to be_present
           expect(data['slug']).to be_present
-          expect(data['created_at']).to be_present
+          expect(data['measures']).to eq([])
 
           # Verify the score was actually created in database
           created_score = Score.find(data['id'])
           expect(created_score.title).to eq('New Test Song')
           expect(created_score.user_id).to eq(user.id)
           expect(created_score.key).to eq(3) # Verify key was automatically set
+        end
+      end
+
+      response(201, 'score created with measures and chords') do
+        schema '$ref' => '#/components/schemas/Score'
+
+        let(:user) { create(:user) }
+        let(:Authorization) { "Bearer mock-firebase-token" }
+        let(:score) do
+          {
+            score: {
+              title: 'Whole New Song',
+              key_name: 'C',
+              key_mode: 'major',
+              measures_attributes: [
+                {
+                  position: 1,
+                  chords_attributes: [
+                    { position: 1, root_offset: 0, bass_offset: 0, chord_type: 'major' },
+                    { position: 2, root_offset: 9, bass_offset: 9, chord_type: 'minor' }
+                  ]
+                },
+                {
+                  position: 2,
+                  key_name: 'A',
+                  key_mode: 'minor',
+                  row_break_before: true,
+                  chords_attributes: [
+                    { position: 1, root_offset: 7, bass_offset: 7, chord_type: 'maj7' }
+                  ]
+                }
+              ]
+            }
+          }
+        end
+
+        before { stub_firebase_verification(user) }
+
+        run_test! do |response|
+          data = JSON.parse(response.body)
+
+          expect(data['title']).to eq('Whole New Song')
+          expect(data['measures'].length).to eq(2)
+
+          measure1 = data['measures'][0]
+          expect(measure1['id']).to be_present
+          expect(measure1['position']).to eq(1)
+          expect(measure1['chords'].length).to eq(2)
+          expect(measure1['chords'][0]['id']).to be_present
+          expect(measure1['chords'][0]['chord_type']).to eq('major')
+          expect(measure1['chords'][1]['chord_type']).to eq('minor')
+
+          measure2 = data['measures'][1]
+          expect(measure2['position']).to eq(2)
+          expect(measure2['key_name']).to eq('A')
+          expect(measure2['key_mode']).to eq('minor')
+          expect(measure2['row_break_before']).to eq(true)
+          expect(measure2['chords'].length).to eq(1)
+
+          created_score = Score.find(data['id'])
+          expect(created_score.measures.count).to eq(2)
+          expect(created_score.chords.count).to eq(3)
         end
       end
 
@@ -268,7 +354,15 @@ RSpec.describe 'api/scores', type: :request do
             score: {
               title: 'Test Song',
               key_name: 'C',
-              key_mode: 'major'
+              key_mode: 'major',
+              measures_attributes: [
+                {
+                  position: 1,
+                  chords_attributes: [
+                    { position: 1, root_offset: 0, bass_offset: 0, chord_type: 'major' }
+                  ]
+                }
+              ]
             }
           }
         end
@@ -277,6 +371,8 @@ RSpec.describe 'api/scores', type: :request do
           data = JSON.parse(response.body)
           expect(data['title']).to eq('Test Song')
           expect(data['guest_token']).to be_present
+          expect(data['measures'].length).to eq(1)
+          expect(data['measures'][0]['chords'].length).to eq(1)
           created_score = Score.find(data['id'])
           expect(created_score.user_id).to be_nil
           expect(created_score.guest_token).to be_present

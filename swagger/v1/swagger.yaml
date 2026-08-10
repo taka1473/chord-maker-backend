@@ -353,6 +353,37 @@ paths:
                       type: string
                     published:
                       type: boolean
+                    measures_attributes:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          position:
+                            type: integer
+                          key_name:
+                            type: string
+                            nullable: true
+                          key_mode:
+                            type: string
+                            enum:
+                            - major
+                            - minor
+                            nullable: true
+                          row_break_before:
+                            type: boolean
+                          chords_attributes:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                position:
+                                  type: integer
+                                root_offset:
+                                  type: integer
+                                bass_offset:
+                                  type: integer
+                                chord_type:
+                                  type: string
                   required:
                   - title
                   - key_name

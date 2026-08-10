@@ -1,6 +1,12 @@
 class Api::ScoresController < ApplicationController
   SCORE_LIST_FIELDS = [ :id, :slug, :title, :artist, :key, :key_name, :key_mode, :tempo, :time_signature, :lyrics, :created_at, :published ].freeze
   SCORE_DETAIL_FIELDS = [ :id, :slug, :title, :artist, :key, :key_name, :key_mode, :tempo, :time_signature, :lyrics, :published ].freeze
+  WHOLE_SCORE_INCLUDE = {
+    measures: {
+      only: [ :id, :position, :key, :key_name, :key_mode, :row_break_before ],
+      include: { chords: { only: [ :id, :root_offset, :bass_offset, :chord_type, :position ] } }
+    }
+  }.freeze
   PER_PAGE = 20
 
   before_action :authenticate_if_present, only: [ :create, :whole_score, :upsert_whole_score ]
@@ -28,9 +34,9 @@ class Api::ScoresController < ApplicationController
   end
 
   def create
-    score = Score.new(score_params.merge(user: current_user))
+    score = Score.new(whole_score_params.merge(user: current_user))
     if score.save
-      json = score.as_json(only: SCORE_LIST_FIELDS, methods: [ :tag_names ])
+      json = score.as_json(only: SCORE_DETAIL_FIELDS, methods: [ :tag_names ], include: WHOLE_SCORE_INCLUDE)
       json["guest_token"] = score.guest_token if score.guest?
       render json: json, status: :created
     else
@@ -52,10 +58,7 @@ class Api::ScoresController < ApplicationController
     end
     render json: @score,
       only: SCORE_DETAIL_FIELDS, methods: [ :tag_names ],
-      include: {
-        measures: { only: [ :id, :position, :key, :key_name, :key_mode, :row_break_before ],
-        include: {
-          chords: { only: [ :id, :root_offset, :bass_offset, :chord_type, :position ] } } } }
+      include: WHOLE_SCORE_INCLUDE
   end
 
   def upsert_whole_score
@@ -63,7 +66,7 @@ class Api::ScoresController < ApplicationController
     if @score.save
       render json: @score,
         only: SCORE_DETAIL_FIELDS, methods: [ :tag_names ],
-        include: { measures: { only: [ :id, :position, :key, :key_name, :key_mode, :row_break_before ], include: { chords: { only: [ :id, :root_offset, :bass_offset, :chord_type, :position ] } } } },
+        include: WHOLE_SCORE_INCLUDE,
         status: :ok
     else
       render_validation_errors(@score)
@@ -103,10 +106,6 @@ class Api::ScoresController < ApplicationController
     @score = Score.includes(:tags, measures: :chords).find_by!(slug: params[:id])
   rescue ActiveRecord::RecordNotFound
     render json: { error: "Score not found" }, status: :not_found
-  end
-
-  def score_params
-    params.require(:score).permit(:title, :artist, :key_name, :key_mode, :tempo, :time_signature, :published, tag_names: [])
   end
 
   def whole_score_params
