@@ -1,5 +1,5 @@
 class Api::ScoresController < ApplicationController
-  SCORE_LIST_FIELDS = [ :id, :slug, :title, :artist, :key, :key_name, :key_mode, :tempo, :time_signature, :lyrics, :created_at, :published ].freeze
+  SCORE_LIST_FIELDS = [ :id, :slug, :title, :artist, :key, :key_name, :key_mode, :tempo, :time_signature, :lyrics, :created_at, :updated_at, :published ].freeze
   SCORE_DETAIL_FIELDS = [ :id, :slug, :title, :artist, :key, :key_name, :key_mode, :tempo, :time_signature, :lyrics, :published ].freeze
   WHOLE_SCORE_INCLUDE = {
     measures: {
