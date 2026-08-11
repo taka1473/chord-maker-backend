@@ -8,6 +8,7 @@
 #  key_name         :string
 #  position         :integer          not null
 #  row_break_before :boolean          default(FALSE), not null
+#  section          :string
 #  created_at       :datetime         not null
 #  updated_at       :datetime         not null
 #  score_id         :bigint           not null

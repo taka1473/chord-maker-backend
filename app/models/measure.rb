@@ -8,6 +8,7 @@
 #  key_name         :string
 #  position         :integer          not null
 #  row_break_before :boolean          default(FALSE), not null
+#  section          :string
 #  created_at       :datetime         not null
 #  updated_at       :datetime         not null
 #  score_id         :bigint           not null
@@ -30,8 +31,10 @@ class Measure < ApplicationRecord
   validates :key, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 11 }, allow_nil: true
   validates :key_name, inclusion: { in: Score::KEY_MAP.keys }, allow_nil: true
   validates :key_mode, inclusion: { in: Score::KEY_MODES }, allow_nil: true
+  validates :section, length: { maximum: 20 }, allow_nil: true
 
   before_validation :set_key
+  before_validation :normalize_section
 
   scope :ordered, -> { order(:position) }
 
@@ -39,5 +42,10 @@ class Measure < ApplicationRecord
 
   def set_key
     self.key = Score::KEY_MAP[key_name] if key_name.present?
+  end
+
+  def normalize_section
+    self.section = section.strip if section.is_a?(String)
+    self.section = nil if section.blank?
   end
 end

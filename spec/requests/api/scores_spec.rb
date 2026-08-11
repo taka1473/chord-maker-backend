@@ -195,6 +195,7 @@ RSpec.describe 'api/scores', type: :request do
                     key_name: { type: :string, nullable: true },
                     key_mode: { type: :string, enum: [ 'major', 'minor' ], nullable: true },
                     row_break_before: { type: :boolean },
+                    section: { type: :string, nullable: true },
                     chords_attributes: {
                       type: :array,
                       items: {
@@ -271,6 +272,7 @@ RSpec.describe 'api/scores', type: :request do
               measures_attributes: [
                 {
                   position: 1,
+                  section: 'Aメロ',
                   chords_attributes: [
                     { position: 1, root_offset: 0, bass_offset: 0, chord_type: 'major' },
                     { position: 2, root_offset: 9, bass_offset: 9, chord_type: 'minor' }
@@ -281,6 +283,7 @@ RSpec.describe 'api/scores', type: :request do
                   key_name: 'A',
                   key_mode: 'minor',
                   row_break_before: true,
+                  section: 'サビ',
                   chords_attributes: [
                     { position: 1, root_offset: 7, bass_offset: 7, chord_type: 'maj7' }
                   ]
@@ -301,6 +304,7 @@ RSpec.describe 'api/scores', type: :request do
           measure1 = data['measures'][0]
           expect(measure1['id']).to be_present
           expect(measure1['position']).to eq(1)
+          expect(measure1['section']).to eq('Aメロ')
           expect(measure1['chords'].length).to eq(2)
           expect(measure1['chords'][0]['id']).to be_present
           expect(measure1['chords'][0]['chord_type']).to eq('major')
@@ -311,6 +315,7 @@ RSpec.describe 'api/scores', type: :request do
           expect(measure2['key_name']).to eq('A')
           expect(measure2['key_mode']).to eq('minor')
           expect(measure2['row_break_before']).to eq(true)
+          expect(measure2['section']).to eq('サビ')
           expect(measure2['chords'].length).to eq(1)
 
           created_score = Score.find(data['id'])
@@ -617,6 +622,7 @@ RSpec.describe 'api/scores', type: :request do
                     key_name: { type: :string, nullable: true },
                     key_mode: { type: :string, enum: ['major', 'minor'], nullable: true },
                     row_break_before: { type: :boolean },
+                    section: { type: :string, nullable: true },
                     _destroy: { type: :boolean },
                     chords_attributes: {
                       type: :array,
@@ -658,6 +664,7 @@ RSpec.describe 'api/scores', type: :request do
                        id: { type: :integer },
                        position: { type: :integer },
                        row_break_before: { type: :boolean },
+                       section: { type: :string, nullable: true },
                        chords: {
                          type: :array,
                          items: {
@@ -694,6 +701,7 @@ RSpec.describe 'api/scores', type: :request do
                   position: 1,
                   key_name: 'A',
                   key_mode: 'minor',
+                  section: '1サビ',
                   chords_attributes: [
                     { position: 1, root_offset: 0, bass_offset: 0, chord_type: 'major' },
                     { position: 2, root_offset: 5, bass_offset: 5, chord_type: 'minor' }
@@ -736,6 +744,7 @@ RSpec.describe 'api/scores', type: :request do
           expect(measure1['position']).to eq(1)
           expect(measure1['key_name']).to eq('A')
           expect(measure1['key_mode']).to eq('minor')
+          expect(measure1['section']).to eq('1サビ')
           expect(measure1['chords'].length).to eq(2)
 
           chords_m1 = measure1['chords'].sort_by { |c| c['position'] }
@@ -1030,6 +1039,32 @@ RSpec.describe 'api/scores', type: :request do
           run_test! do |response|
             data = JSON.parse(response.body)
             expect(data['errors']['key_name']).to include("キーは一覧にない値です")
+          end
+        end
+
+        context 'when updating with a section that is too long' do
+          let(:user) { create(:user) }
+          let(:Authorization) { "Bearer mock-firebase-token" }
+          let(:existing_score) { create(:score, title: 'Test Song', key_name: 'C', user: user) }
+          let(:id) { existing_score.slug }
+          let(:score) do
+            {
+              score: {
+                title: 'Test Song',
+                key_name: 'C',
+                key_mode: 'major',
+                measures_attributes: [
+                  { position: 1, section: 'あ' * 21, chords_attributes: [] }
+                ]
+              }
+            }
+          end
+
+          before { stub_firebase_verification(user) }
+
+          run_test! do |response|
+            data = JSON.parse(response.body)
+            expect(data['errors']['measures.section']).to include(a_string_including("20文字以内で入力してください"))
           end
         end
 

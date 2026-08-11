@@ -371,6 +371,9 @@ paths:
                             nullable: true
                           row_break_before:
                             type: boolean
+                          section:
+                            type: string
+                            nullable: true
                           chords_attributes:
                             type: array
                             items:
@@ -460,6 +463,9 @@ paths:
                           type: integer
                         row_break_before:
                           type: boolean
+                        section:
+                          type: string
+                          nullable: true
                         chords:
                           type: array
                           items:
@@ -523,6 +529,9 @@ paths:
                             nullable: true
                           row_break_before:
                             type: boolean
+                          section:
+                            type: string
+                            nullable: true
                           _destroy:
                             type: boolean
                           chords_attributes:

@@ -63,6 +63,7 @@ ja:
         position: 小節の位置
         key_name: 小節のキー
         key_mode: 小節のメジャー/マイナー
+        section: セクション
       chord:
         position: コードの位置
         root_offset: ルート音
