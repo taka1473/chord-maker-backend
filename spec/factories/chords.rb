@@ -7,6 +7,7 @@
 #  chord_type  :string           default("0"), not null
 #  position    :integer          not null
 #  root_offset :integer          not null
+#  tensions    :json             not null
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
 #  measure_id  :bigint           not null

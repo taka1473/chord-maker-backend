@@ -4,7 +4,7 @@ class Api::ScoresController < ApplicationController
   WHOLE_SCORE_INCLUDE = {
     measures: {
       only: [ :id, :position, :key, :key_name, :key_mode, :row_break_before, :section ],
-      include: { chords: { only: [ :id, :root_offset, :bass_offset, :chord_type, :position ] } }
+      include: { chords: { only: [ :id, :root_offset, :bass_offset, :chord_type, :tensions, :position ] } }
     }
   }.freeze
   PER_PAGE = 20
@@ -109,6 +109,6 @@ class Api::ScoresController < ApplicationController
   end
 
   def whole_score_params
-    params.require(:score).permit(:title, :artist, :key_name, :key_mode, :tempo, :time_signature, :published, tag_names: [], measures_attributes: [:id, :position, :key_name, :key_mode, :row_break_before, :section, :_destroy, chords_attributes: [:id, :root_offset, :bass_offset, :chord_type, :position, :_destroy]])
+    params.require(:score).permit(:title, :artist, :key_name, :key_mode, :tempo, :time_signature, :published, tag_names: [], measures_attributes: [:id, :position, :key_name, :key_mode, :row_break_before, :section, :_destroy, chords_attributes: [:id, :root_offset, :bass_offset, :chord_type, :position, :_destroy, tensions: []]])
   end
 end

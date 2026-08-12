@@ -387,6 +387,10 @@ paths:
                                   type: integer
                                 chord_type:
                                   type: string
+                                tensions:
+                                  type: array
+                                  items:
+                                    type: string
                   required:
                   - title
                   - key_name
@@ -481,6 +485,10 @@ paths:
                                 type: integer
                               chord_type:
                                 type: string
+                              tensions:
+                                type: array
+                                items:
+                                  type: string
         '404':
           description: score not found
         '422':
@@ -549,6 +557,10 @@ paths:
                                   type: integer
                                 chord_type:
                                   type: string
+                                tensions:
+                                  type: array
+                                  items:
+                                    type: string
                                 _destroy:
                                   type: boolean
   "/api/tags":

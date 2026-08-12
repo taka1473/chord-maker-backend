@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_11_000000) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_12_000000) do
   create_table "chords", force: :cascade do |t|
     t.bigint "measure_id", null: false
     t.integer "position", null: false
@@ -19,6 +19,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_11_000000) do
     t.string "chord_type", default: "0", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.json "tensions", default: [], null: false
     t.index ["measure_id"], name: "index_chords_on_measure_id"
   end
 

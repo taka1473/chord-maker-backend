@@ -204,7 +204,8 @@ RSpec.describe 'api/scores', type: :request do
                           position: { type: :integer },
                           root_offset: { type: :integer },
                           bass_offset: { type: :integer },
-                          chord_type: { type: :string }
+                          chord_type: { type: :string },
+                          tensions: { type: :array, items: { type: :string } }
                         }
                       }
                     }
@@ -634,6 +635,7 @@ RSpec.describe 'api/scores', type: :request do
                           root_offset: { type: :integer },
                           bass_offset: { type: :integer },
                           chord_type: { type: :string },
+                          tensions: { type: :array, items: { type: :string } },
                           _destroy: { type: :boolean }
                         }
                       }
@@ -674,7 +676,8 @@ RSpec.describe 'api/scores', type: :request do
                              position: { type: :integer },
                              root_offset: { type: :integer },
                              bass_offset: { type: :integer },
-                             chord_type: { type: :string }
+                             chord_type: { type: :string },
+                             tensions: { type: :array, items: { type: :string } }
                            }
                          }
                        }
@@ -703,7 +706,7 @@ RSpec.describe 'api/scores', type: :request do
                   key_mode: 'minor',
                   section: '1サビ',
                   chords_attributes: [
-                    { position: 1, root_offset: 0, bass_offset: 0, chord_type: 'major' },
+                    { position: 1, root_offset: 0, bass_offset: 0, chord_type: 'major', tensions: [ 'b9', '13' ] },
                     { position: 2, root_offset: 5, bass_offset: 5, chord_type: 'minor' }
                   ]
                 },
@@ -751,10 +754,12 @@ RSpec.describe 'api/scores', type: :request do
           expect(chords_m1[0]['position']).to eq(1)
           expect(chords_m1[0]['root_offset']).to eq(0)
           expect(chords_m1[0]['chord_type']).to eq('major')
+          expect(chords_m1[0]['tensions']).to eq([ 'b9', '13' ])
 
           expect(chords_m1[1]['position']).to eq(2)
           expect(chords_m1[1]['root_offset']).to eq(5)
           expect(chords_m1[1]['chord_type']).to eq('minor')
+          expect(chords_m1[1]['tensions']).to eq([])
 
           # Test measure 2
           measure2 = measures[1]
