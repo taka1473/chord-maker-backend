@@ -56,9 +56,9 @@ class Api::ScoresController < ApplicationController
       render json: { error: "Score not found" }, status: :not_found
       return
     end
-    render json: @score,
-      only: SCORE_DETAIL_FIELDS, methods: [ :tag_names ],
-      include: WHOLE_SCORE_INCLUDE
+    json = @score.as_json(only: SCORE_DETAIL_FIELDS, methods: [ :tag_names ], include: WHOLE_SCORE_INCLUDE)
+    json["editable"] = score_editable?
+    render json: json
   end
 
   def upsert_whole_score
@@ -101,6 +101,15 @@ class Api::ScoresController < ApplicationController
   end
 
   private
+
+  # 現在のリクエストがこのスコアを編集できるか（所有者、または有効なゲストトークン）。
+  def score_editable?
+    if @score.user_id.present?
+      current_user.present? && @score.user_id == current_user.id
+    else
+      valid_guest_token? && !@score.guest_expired?
+    end
+  end
 
   def set_score
     @score = Score.includes(:tags, measures: :chords).find_by!(slug: params[:id])

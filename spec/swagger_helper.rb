@@ -56,6 +56,10 @@ RSpec.configure do |config|
                 type: :array,
                 items: { '$ref': '#/components/schemas/Measure' },
                 description: 'Array of measures containing chords'
+              },
+              editable: {
+                type: :boolean,
+                description: 'Whether the current request (owner or valid guest token) may edit this score'
               }
             },
             required: [:id, :title, :key, :key_name, :tempo, :time_signature, :lyrics]

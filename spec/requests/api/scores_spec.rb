@@ -499,9 +499,16 @@ RSpec.describe 'api/scores', type: :request do
 
     get('show score') do
       produces 'application/json'
+      parameter name: :Authorization, in: :header, type: :string, required: false,
+        description: 'Bearer token (optional; enables owner-only fields like editable)'
+      parameter name: :guest_token, in: :query, type: :string, required: false,
+        description: 'Guest token for editing an unpublished guest score'
 
       response(200, 'successful') do
         schema '$ref' => '#/components/schemas/Score'
+
+        let(:Authorization) { nil }
+        let(:guest_token) { nil }
 
         let(:score) do
           create(:score, :published, title: 'test', key_name: 'A', tempo: 120, time_signature: '4/4')
@@ -523,6 +530,9 @@ RSpec.describe 'api/scores', type: :request do
           expect(data['key_name']).to eq('A')
           expect(data['tempo']).to eq(120)
           expect(data['time_signature']).to eq('4/4')
+
+          # Unauthenticated viewer of a published score cannot edit it
+          expect(data['editable']).to eq(false)
 
           # Test measures are included
           expect(data['measures']).to be_present
@@ -583,6 +593,51 @@ RSpec.describe 'api/scores', type: :request do
 
           expect(data['measures'].map { |m| m['position'] }).to eq([1, 2])
           expect(data['measures'][0]['chords'].map { |c| c['position'] }).to eq([1, 2])
+        end
+      end
+
+      response(200, 'owner sees editable true') do
+        schema '$ref' => '#/components/schemas/Score'
+
+        let(:user) { create(:user) }
+        let(:score) { create(:score, :published, user: user) }
+        let(:id) { score.slug }
+        let(:Authorization) { "Bearer mock-firebase-token" }
+        let(:guest_token) { nil }
+
+        before { stub_firebase_verification(user) }
+
+        run_test! do |response|
+          expect(JSON.parse(response.body)['editable']).to eq(true)
+        end
+      end
+
+      response(200, 'authenticated non-owner sees editable false') do
+        schema '$ref' => '#/components/schemas/Score'
+
+        let(:user) { create(:user) }
+        let(:score) { create(:score, :published) }
+        let(:id) { score.slug }
+        let(:Authorization) { "Bearer mock-firebase-token" }
+        let(:guest_token) { nil }
+
+        before { stub_firebase_verification(user) }
+
+        run_test! do |response|
+          expect(JSON.parse(response.body)['editable']).to eq(false)
+        end
+      end
+
+      response(200, 'guest with valid token sees editable true') do
+        schema '$ref' => '#/components/schemas/Score'
+
+        let(:score) { create(:score, user: nil, published: false) }
+        let(:id) { score.slug }
+        let(:Authorization) { nil }
+        let(:guest_token) { score.guest_token }
+
+        run_test! do |response|
+          expect(JSON.parse(response.body)['editable']).to eq(true)
         end
       end
 

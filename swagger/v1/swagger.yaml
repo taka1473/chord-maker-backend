@@ -405,10 +405,22 @@ paths:
         type: string
     get:
       summary: show score
+      parameters:
+      - name: Authorization
+        in: header
+        required: false
+        description: Bearer token (optional; enables owner-only fields like editable)
+        schema:
+          type: string
+      - name: guest_token
+        in: query
+        required: false
+        description: Guest token for editing an unpublished guest score
+        schema:
+          type: string
       responses:
         '200':
-          description: returns measures and chords in position order even when inserted
-            in reverse
+          description: guest with valid token sees editable true
           content:
             application/json:
               schema:
@@ -628,6 +640,10 @@ components:
           items:
             "$ref": "#/components/schemas/Measure"
           description: Array of measures containing chords
+        editable:
+          type: boolean
+          description: Whether the current request (owner or valid guest token) may
+            edit this score
       required:
       - id
       - title
